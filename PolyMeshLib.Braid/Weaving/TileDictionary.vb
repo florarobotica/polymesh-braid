@@ -6,7 +6,7 @@ Namespace Weaving
     Public Module DefaultTiles
 
         ''' <summary>
-        ''' ALWAYS go FROM 0 TO 1 level. not yet done
+        ''' ALWAYS go FROM 0 TO 1 level. not yet done, but works anyway.
         ''' </summary>
         ''' <param name="Hash"></param>
         ''' <returns></returns>

@@ -20,7 +20,7 @@ Namespace Solvers
         End Property
 
         ''' <summary>
-        ''' Enable 2 vertices with the same source distance value to connect to each other.
+        ''' Enable the vertices with the same source distance value to connect to each other.
         ''' </summary>
         ''' <returns></returns>
         Public Property EqualDistanceInterconnect As Boolean = False
@@ -125,7 +125,7 @@ Namespace Solvers
             Return outgr
         End Function
 
-        Function AssignRow(VertexCount As Integer, Paths As List(Of List(Of Integer))) As Integer()
+        Private Function AssignRow(VertexCount As Integer, Paths As List(Of List(Of Integer))) As Integer()
             Dim row(VertexCount - 1) As Integer
             For Each pth As List(Of Integer) In Paths
                 For i As Integer = 0 To pth.Count - 1 Step 1
@@ -135,7 +135,7 @@ Namespace Solvers
             Return row
         End Function
 
-        Sub DirectByRow(ByRef dir As SortedList(Of UndirectedEdge, Integer), rows() As Integer, adj() As List(Of Integer), Optional SolveOrder As List(Of Integer) = Nothing)
+        Private Sub DirectByRow(ByRef dir As SortedList(Of UndirectedEdge, Integer), rows() As Integer, adj() As List(Of Integer), Optional SolveOrder As List(Of Integer) = Nothing)
             Dim pos() As Integer = Nothing
             Dim neg() As Integer = Nothing
             GetStates(dir, adj, pos, neg)
@@ -186,7 +186,7 @@ Namespace Solvers
             Next
         End Sub
 
-        Function PropagateValues(gr As DirectedGraph(Of Double), sources As IEnumerable(Of Integer), minvalue As Integer) As SortedList(Of DirectedEdge, Integer)
+        Private Function PropagateValues(gr As DirectedGraph(Of Double), sources As IEnumerable(Of Integer), minvalue As Integer) As SortedList(Of DirectedEdge, Integer)
             Dim adj() As List(Of Integer) = gr.GetAdjacencyMatrix
             Dim srt As New SortedList(Of DirectedEdge, Integer)
 

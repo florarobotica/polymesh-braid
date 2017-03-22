@@ -4,6 +4,10 @@ Imports PolyMeshLib.Braid.Types.GridPoint
 
 Namespace Weaving
 
+
+    ''' <summary>
+    ''' A set of functions for the Weaver.
+    ''' </summary>
     Public Module WeaverFunctions
 
         Public Function EvaluateTriangle(P1 As Point3d, P2 As Point3d, P3 As Point3d, U As Double, V As Double) As Point3d
@@ -172,7 +176,6 @@ Namespace Weaving
 
             Return pm
         End Function
-
 
         Friend ReadOnly Property GetGridPoint(Grid As Point3d(,,), Point As GridPoint) As Point3d
             Get

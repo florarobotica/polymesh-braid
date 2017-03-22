@@ -27,12 +27,126 @@ Namespace Graphs
 
         Private _rnd As New Random(123)
 
+
+        ''' <summary>
+        ''' Use LenghtEqualizer to get FacesPerEdge and StripCountSolver to get the StripsPerEdge.
+        ''' </summary>
+        ''' <param name="G"></param>
+        ''' <param name="StripsPerEdge"></param>
+        ''' <param name="FacesPerEdge"></param>
         Sub New(G As UndirectedGraph(Of Point3d), StripsPerEdge As SortedList(Of UndirectedEdge, Integer), FacesPerEdge As SortedList(Of UndirectedEdge, Integer))
             Graph = G
             VertexConnections = G.GetAdjacencyMatrix
             FacesEdge = FacesPerEdge
             StripsEdge = StripsPerEdge
         End Sub
+
+        'returns "" if everything is ok , otherwise returns a message of what went wrong.
+        Public Function Build(Optional ThoseAreOutputs As IEnumerable(Of Integer) = Nothing) As String
+            ClearEverything()
+
+            Dim rep As New String("")
+            If Not ConstructNodes(LooseCirclesRadius, ThoseAreOutputs) Then rep &= "Failed to construct the nodes" & vbCrLf
+            If Not ConstructStruts() Then rep &= "Failed to construct the struts" & vbCrLf
+            Return rep
+        End Function
+
+        ''' <summary>
+        ''' The resulting node geometry, sorted by vertex index.
+        ''' </summary>
+        ''' <returns></returns>
+        Public Property Nodes As SortedList(Of Integer, PolyMesh)
+            Get
+                Return _nodes
+            End Get
+            Set(value As SortedList(Of Integer, PolyMesh))
+                _nodes = value
+            End Set
+        End Property
+
+        ''' <summary>
+        ''' The resulting strut geometry, sorted by edge.
+        ''' </summary>
+        ''' <returns></returns>
+        Public Property Struts As SortedList(Of UndirectedEdge, PolyMesh)
+            Get
+                Return _struts
+            End Get
+            Set(value As SortedList(Of UndirectedEdge, PolyMesh))
+                _struts = value
+            End Set
+        End Property
+
+        ''' <summary>
+        ''' The points used to construct the geometry.
+        ''' </summary>
+        ''' <returns></returns>
+        Public Property StrutPoints As SortedList(Of UndirectedEdge(Of Integer), Point3d())
+            Get
+                Return _strutPoints
+            End Get
+            Set(value As SortedList(Of UndirectedEdge(Of Integer), Point3d()))
+                _strutPoints = value
+            End Set
+        End Property
+
+        ''' <summary>
+        ''' If a node becomes an output then the newly introduced mesh is stored here. Sorted by the vertices.
+        ''' </summary>
+        ''' <returns></returns>
+        Public Property HelperMeshes As SortedList(Of Integer, PolyMesh)
+            Get
+                Return _others
+            End Get
+            Set(value As SortedList(Of Integer, PolyMesh))
+                _others = value
+            End Set
+        End Property
+
+        ''' <summary>
+        ''' Naked edges which are not a part of nodes, sorted by the vertices.
+        ''' </summary>
+        ''' <returns></returns>
+        Public Property EndEdges As SortedList(Of Integer, Polyline)
+            Get
+                Return _naked
+            End Get
+            Set(value As SortedList(Of Integer, Polyline))
+                _naked = value
+            End Set
+        End Property
+
+        Public Function GetStrutsAsOneMesh() As PolyMesh
+            Dim alln As New List(Of PolyMesh)
+            For i As Integer = 0 To Struts.Keys.Count - 1 Step 1
+                If Struts(Struts.Keys(i)) Is Nothing Then Continue For
+                alln.Add(Struts(Struts.Keys(i)))
+            Next
+            Return PolyMesh.Join(alln)
+        End Function
+
+        Public Function GetNodesAsOneMesh() As PolyMesh
+            Dim alln As New List(Of PolyMesh)
+            For i As Integer = 0 To Nodes.Keys.Count - 1 Step 1
+                If Nodes(Nodes.Keys(i)) Is Nothing Then Continue For
+                alln.Add(Nodes(Nodes.Keys(i)))
+            Next
+            Return PolyMesh.Join(alln)
+        End Function
+
+        ''' <summary>
+        ''' Introduces singular meshes in 2-connected vertices with uneven amount of strips in each connected edge.
+        ''' The value is the tolerance for the difference between the strip count of the edges.
+        ''' </summary>
+        ''' <returns></returns>
+        Public Property AllowSingular As Integer
+            Get
+                Return _allowsingular
+            End Get
+            Set(value As Integer)
+                _allowsingular = value
+            End Set
+        End Property
 
         Public Property Graph As UndirectedGraph(Of Point3d)
             Get
@@ -101,101 +215,45 @@ Namespace Graphs
             End Set
         End Property
 
-        Public Property Nodes As SortedList(Of Integer, PolyMesh)
-            Get
-                Return _nodes
-            End Get
-            Set(value As SortedList(Of Integer, PolyMesh))
-                _nodes = value
-            End Set
-        End Property
-
-        Public Property StrutPoints As SortedList(Of UndirectedEdge(Of Integer), Point3d())
-            Get
-                Return _strutPoints
-            End Get
-            Set(value As SortedList(Of UndirectedEdge(Of Integer), Point3d()))
-                _strutPoints = value
-            End Set
-        End Property
-
-        Public Property Struts As SortedList(Of UndirectedEdge, PolyMesh)
-            Get
-                Return _struts
-            End Get
-            Set(value As SortedList(Of UndirectedEdge, PolyMesh))
-                _struts = value
-            End Set
-        End Property
-
-        ''' <summary>
-        ''' If a node becomes an output then the newly introduced mesh is stored here. Sorted by the vertices.
-        ''' </summary>
-        ''' <returns></returns>
-        Public Property HelperMeshes As SortedList(Of Integer, PolyMesh)
-            Get
-                Return _others
-            End Get
-            Set(value As SortedList(Of Integer, PolyMesh))
-                _others = value
-            End Set
-        End Property
-
-        ''' <summary>
-        ''' Naked edges which are not a part of nodes, sorted by the vertices.
-        ''' </summary>
-        ''' <returns></returns>
-        Public Property EndEdges As SortedList(Of Integer, Polyline)
-            Get
-                Return _naked
-            End Get
-            Set(value As SortedList(Of Integer, Polyline))
-                _naked = value
-            End Set
-        End Property
-
-        Public Property AllowSingular As Integer
-            Get
-                Return _allowsingular
-            End Get
-            Set(value As Integer)
-                _allowsingular = value
-            End Set
-        End Property
-
-        Public Function GetStrutsAsOneMesh() As PolyMesh
-            Dim alln As New List(Of PolyMesh)
-            For i As Integer = 0 To Struts.Keys.Count - 1 Step 1
-                If Struts(Struts.Keys(i)) Is Nothing Then Continue For
-                alln.Add(Struts(Struts.Keys(i)))
-            Next
-            Return PolyMesh.Join(alln)
-        End Function
-
-        Public Function GetNodesAsOneMesh() As PolyMesh
-            Dim alln As New List(Of PolyMesh)
-            For i As Integer = 0 To Nodes.Keys.Count - 1 Step 1
-                If Nodes(Nodes.Keys(i)) Is Nothing Then Continue For
-                alln.Add(Nodes(Nodes.Keys(i)))
-            Next
-            Return PolyMesh.Join(alln)
-        End Function
-
-        'returns "" if everything is ok , otherwise returns a message of what went wrong.
-        Public Function Build(Optional ThoseAreOutputs As IEnumerable(Of Integer) = Nothing) As String
-            ClearEverything()
-
-            Dim rep As New String("")
-            If Not ConstructNodes(LooseCirclesRadius, ThoseAreOutputs) Then rep &= "Failed to construct the nodes" & vbCrLf
-            If Not ConstructStruts() Then rep &= "Failed to construct the struts" & vbCrLf
-            Return rep
-        End Function
-
-        Public Function ClearEverything() As Boolean
+        Private Function ClearEverything() As Boolean
             If VertexConnections IsNot Nothing Then _Vconn = Graph.GetAdjacencyMatrix
             StrutPoints.Clear()
             If Nodes IsNot Nothing Then Nodes.Clear()
             Return True
+        End Function
+
+        ''' <summary>
+        ''' Given as list of points on a sphere, tries to find a new one which is approximately the furthest one possible.
+        ''' </summary>
+        ''' <param name="x"></param>
+        ''' <param name="c"></param>
+        ''' <returns></returns>
+        Function InventPoint(x As List(Of Point3d), c As Point3d) As Point3d
+            If x.Count = 1 Then
+                Return -x(0)
+            ElseIf x.Count = 2 Then
+                Dim pl As New Plane(AveragePoints(x), x(1) - x(0))
+                Dim cir As New Circle(pl, c.DistanceTo(x(0)))
+
+                Return cir.PointAt(0)
+            ElseIf x.Count = 3 Then
+                Dim av As Point3d = AveragePoints(x)
+
+                Dim vecdir As Vector3d = c - av
+                vecdir.Unitize()
+                vecdir *= c.DistanceTo(x(0))
+
+                Return c + vecdir
+            Else
+                Dim av As Point3d = AveragePoints(x)
+
+                Dim vec As Vector3d = av - c
+                vec.Unitize()
+                vec *= x(0).DistanceTo(c)
+                av = c - vec
+
+                Return av
+            End If
         End Function
 
 #Region "Meshes"
@@ -567,14 +625,6 @@ Namespace Graphs
             Return Points
         End Function
 
-
-        ''' <summary>
-        ''' 
-        ''' </summary>
-        ''' <param name="Triangle"></param>
-        ''' <param name="Strips"></param>
-        ''' <param name="PointsForStruts">Points for struts in the Triangle order.</param>
-        ''' <returns></returns>
         Private Function MakeTriangleNode(Triangle As IEnumerable(Of Point3d), Strips As IEnumerable(Of Integer), ByRef PointsForStruts()() As Point3d) As PolyMesh
             Dim MasterIndex As Integer = -1
             Dim MaxCount As Integer = -1
@@ -742,33 +792,7 @@ Namespace Graphs
 
 #End Region
 
-        Function InventPoint(x As List(Of Point3d), c As Point3d) As Point3d
-            If x.Count = 1 Then
-                Return -x(0)
-            ElseIf x.Count = 2 Then
-                Dim pl As New Plane(AveragePoints(x), x(1) - x(0))
-                Dim cir As New Circle(pl, c.DistanceTo(x(0)))
 
-                Return cir.PointAt(0)
-            ElseIf x.Count = 3 Then
-                Dim av As Point3d = AveragePoints(x)
-
-                Dim vecdir As Vector3d = c - av
-                vecdir.Unitize()
-                vecdir *= c.DistanceTo(x(0))
-
-                Return c + vecdir
-            Else
-                Dim av As Point3d = AveragePoints(x)
-
-                Dim vec As Vector3d = av - c
-                vec.Unitize()
-                vec *= x(0).DistanceTo(c)
-                av = c - vec
-
-                Return av
-            End If
-        End Function
 
     End Class
 

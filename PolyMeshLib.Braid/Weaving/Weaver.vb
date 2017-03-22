@@ -18,6 +18,7 @@ Namespace Weaving
 
         ''' <summary>
         ''' The Weaver will be changing this mesh, provide a duplicate if you care.
+        ''' You want to ApplyColors first, then use any of the Build... methods.
         ''' </summary>
         ''' <param name="Mesh"></param>
         Sub New(Mesh As PolyMesh)
@@ -58,6 +59,10 @@ Namespace Weaving
             Next
         End Sub
 
+        ''' <summary>
+        ''' You can get the Edges from the PolyMesh by the GetTopologyEdges call.
+        ''' </summary>
+        ''' <param name="Colors"></param>
         Public Sub ApplyColors(Colors As SortedList(Of TopologyEdge, EdgeColor))
             _colors = Colors
 

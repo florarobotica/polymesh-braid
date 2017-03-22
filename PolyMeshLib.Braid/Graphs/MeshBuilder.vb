@@ -1,23 +1,24 @@
 ﻿Imports PolyMeshLib.Core.Types
-Imports Rhino.Geometry
 Imports PolyMeshLib.Core.CommonTools
 Imports PolyMeshLib.Core.Graphs
 
 Namespace Graphs
 
+    <Obsolete("Please use the MeshWrap Class instead.")>
     Public Class MeshBuilder
 
-        Private Polylines As New List(Of Polyline)
-        Private Thickness As New List(Of Integer)
-        Private FacesCounts As New List(Of Integer)
-        Private SrtThick As New SortedList(Of UndirectedEdge, Integer)
-        Private SrtFaces As New SortedList(Of UndirectedEdge, Integer)
-        Private SrtCircles As New SortedList(Of UndirectedEdge, Circle())
-        Private WrongVertex() As Boolean
-        Private SrtPoints As New SortedList(Of Tuple(Of Integer, Integer, Integer), Point3d())
+        Private _polylines As New List(Of Polyline)
+        Private _thickness As New List(Of Integer)
+        Private _facesCounts As New List(Of Integer)
+        Private _sortThick As New SortedList(Of UndirectedEdge, Integer)
+        Private _sortFaces As New SortedList(Of UndirectedEdge, Integer)
+        Private _sortCircles As New SortedList(Of UndirectedEdge, Circle())
+        Private _sortedPoints As New SortedList(Of Tuple(Of Integer, Integer, Integer), Point3d())
 
-        Private SrtEnds As New SortedList(Of Integer, Point3d)
-        Private Proportion As Double = 0.1
+        Private _wrongVertex() As Boolean
+
+        Private _sortEnds As New SortedList(Of Integer, Point3d)
+        Private _proportion As Double = 0.1
 
         Sub New()
         End Sub
@@ -27,34 +28,34 @@ Namespace Graphs
             Dim pm As New PolyMesh
 
             'clean everything 
-            Me.Polylines.Clear()
-            Thickness.Clear()
-            FacesCounts.Clear()
-            SrtThick.Clear()
-            SrtFaces.Clear()
-            SrtCircles.Clear()
-            SrtPoints.Clear()
-            SrtEnds.Clear()
+            Me._polylines.Clear()
+            _thickness.Clear()
+            _facesCounts.Clear()
+            _sortThick.Clear()
+            _sortFaces.Clear()
+            _sortCircles.Clear()
+            _sortedPoints.Clear()
+            _sortEnds.Clear()
 
             'assign variables
-            Me.Proportion = Proportion
-            Me.Polylines.AddRange(Polylines)
-            FacesCounts.AddRange(Faces)
-            Thickness.AddRange(Strips)
+            Me._proportion = Proportion
+            Me._polylines.AddRange(Polylines)
+            _facesCounts.AddRange(Faces)
+            _thickness.AddRange(Strips)
 
-            For i As Integer = 1 To FacesCounts.Count - 2 Step 1
-                Me.FacesCounts(i) -= 6
+            For i As Integer = 1 To _facesCounts.Count - 2 Step 1
+                Me._facesCounts(i) -= 6
             Next
 
             Dim Graph As UndirectedGraph(Of Point3d) = BuildGraph(Polylines)
 
             Dim Conn() As List(Of Integer) = Graph.GetAdjacencyMatrix
 
-            ReDim WrongVertex(Graph.Vertices.Count - 1)
+            ReDim _wrongVertex(Graph.Vertices.Count - 1)
 
-            For i As Integer = 0 To SrtThick.Count - 1 Step 1
+            For i As Integer = 0 To _sortThick.Count - 1 Step 1
                 Dim thisarr(5) As Circle
-                SrtCircles(SrtThick.Keys(i)) = thisarr
+                _sortCircles(_sortThick.Keys(i)) = thisarr
             Next
 
             'build mesh
@@ -64,8 +65,8 @@ Namespace Graphs
                 Dim ThisConn As List(Of Integer) = Conn(i)
 
                 If ThisConn.Count = 1 Then 'this means its a loose end
-                    SrtEnds(i) = Graph.Vertices(i)
-                    SrtEnds(ThisConn(0)) = Graph.Vertices(ThisConn(0))
+                    _sortEnds(i) = Graph.Vertices(i)
+                    _sortEnds(ThisConn(0)) = Graph.Vertices(ThisConn(0))
                 ElseIf ThisConn.Count = 3 Then
                     'get triangle
                     Dim Triangle As New List(Of Point3d)
@@ -82,7 +83,7 @@ Namespace Graphs
                         Dim thisedge As New UndirectedEdge(Index, i)
                         thisedge.Orient()
 
-                        trithick.Add(SrtThick(thisedge))
+                        trithick.Add(_sortThick(thisedge))
                     Next
 
                     'get inscribed circle 
@@ -98,20 +99,20 @@ Namespace Graphs
                         ThisEdge.Orient()
 
                         If i = ThisEdge.PointA Then
-                            SrtCircles(ThisEdge)(0) = primCir(j)
-                            SrtCircles(ThisEdge)(1) = secCir(j)
-                            SrtCircles(ThisEdge)(2) = triCir(j)
+                            _sortCircles(ThisEdge)(0) = primCir(j)
+                            _sortCircles(ThisEdge)(1) = secCir(j)
+                            _sortCircles(ThisEdge)(2) = triCir(j)
                         Else
-                            SrtCircles(ThisEdge)(5) = primCir(j)
-                            SrtCircles(ThisEdge)(4) = secCir(j)
-                            SrtCircles(ThisEdge)(3) = triCir(j)
+                            _sortCircles(ThisEdge)(5) = primCir(j)
+                            _sortCircles(ThisEdge)(4) = secCir(j)
+                            _sortCircles(ThisEdge)(3) = triCir(j)
                         End If
                     Next
 
                     Dim tricheck As New List(Of Integer)(trithick)
                     tricheck.Sort()
-                    If tricheck(0) + tricheck(1) <> tricheck(2) Then WrongVertex(i) = True : Continue For
-                    If tricheck(0) = 0 Then WrongVertex(i) = True : Continue For
+                    If tricheck(0) + tricheck(1) <> tricheck(2) Then _wrongVertex(i) = True : Continue For
+                    If tricheck(0) = 0 Then _wrongVertex(i) = True : Continue For
 
                     '   get connector
                     Dim nwo() As Integer = Nothing
@@ -127,9 +128,9 @@ Namespace Graphs
                         thisedge.Orient()
 
                         If Index = thisedge.PointA Then
-                            SrtCircles(thisedge)(5) = oriented(j)
+                            _sortCircles(thisedge)(5) = oriented(j)
                         Else
-                            SrtCircles(thisedge)(0) = oriented(j)
+                            _sortCircles(thisedge)(0) = oriented(j)
                         End If
 
                     Next
@@ -148,20 +149,20 @@ Namespace Graphs
                         If Index = thisedge.PointA Then
                             Select Case j
                                 Case 0
-                                    SrtPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 1)) = smallcirpoints.ToArray
+                                    _sortedPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 1)) = smallcirpoints.ToArray
                                 Case 1
-                                    SrtPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 1)) = mediumcirpoints.ToArray
+                                    _sortedPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 1)) = mediumcirpoints.ToArray
                                 Case 2
-                                    SrtPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 1)) = largecirpoints.ToArray
+                                    _sortedPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 1)) = largecirpoints.ToArray
                             End Select
                         Else
                             Select Case j
                                 Case 0
-                                    SrtPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 0)) = smallcirpoints.ToArray
+                                    _sortedPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 0)) = smallcirpoints.ToArray
                                 Case 1
-                                    SrtPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 0)) = mediumcirpoints.ToArray
+                                    _sortedPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 0)) = mediumcirpoints.ToArray
                                 Case 2
-                                    SrtPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 0)) = largecirpoints.ToArray
+                                    _sortedPoints(New Tuple(Of Integer, Integer, Integer)(thisedge.PointA, thisedge.PointB, 0)) = largecirpoints.ToArray
                             End Select
                         End If
 
@@ -174,7 +175,7 @@ Namespace Graphs
 
             'construct struts 
             For Each ed As UndirectedEdge In Graph.Edges
-                If WrongVertex(ed.PointA) Or WrongVertex(ed.PointB) Then Continue For
+                If _wrongVertex(ed.PointA) Or _wrongVertex(ed.PointB) Then Continue For
                 If Conn(ed.PointA).Count = 3 And Conn(ed.PointB).Count = 3 Then
                     pm.Append(BuildStrut(ed))
                 ElseIf (Conn(ed.PointA).Count = 1 And Conn(ed.PointB).Count = 3) Or (Conn(ed.PointA).Count = 3 And Conn(ed.PointB).Count = 1) Then
@@ -191,19 +192,19 @@ Namespace Graphs
         Private Function BuildEndStrut(Edge As UndirectedEdge) As PolyMesh
             Dim pm As New PolyMesh
 
-            Dim circles() As Circle = SrtCircles(Edge)
-            Dim strings As Integer = SrtThick(Edge)
+            Dim circles() As Circle = _sortCircles(Edge)
+            Dim strings As Integer = _sortThick(Edge)
 
             If circles(0).Radius = 0 Then
 
-                Dim gpoints() As Point3d = SrtPoints(New Tuple(Of Integer, Integer, Integer)(Edge.PointA, Edge.PointB, 1))
+                Dim gpoints() As Point3d = _sortedPoints(New Tuple(Of Integer, Integer, Integer)(Edge.PointA, Edge.PointB, 1))
                 Dim pts()() As Point3d = CreateCirclePoints(circles(5), circles(4), circles(3), strings, gpoints)
 
                 pm.Append(MeshPoints(pts(0), pts(1)))
                 pm.Append(MeshPoints(pts(1), pts(2)))
 
-                Dim ls As Point3d = SrtEnds(Edge.PointA)
-                Dim le As Point3d = SrtEnds(Edge.PointB)
+                Dim ls As Point3d = _sortEnds(Edge.PointA)
+                Dim le As Point3d = _sortEnds(Edge.PointB)
 
                 Dim pte(pts(0).Length - 1) As Point3d
 
@@ -218,14 +219,14 @@ Namespace Graphs
 
             Else
 
-                Dim gpoints() As Point3d = SrtPoints(New Tuple(Of Integer, Integer, Integer)(Edge.PointA, Edge.PointB, 0))
+                Dim gpoints() As Point3d = _sortedPoints(New Tuple(Of Integer, Integer, Integer)(Edge.PointA, Edge.PointB, 0))
                 Dim pts()() As Point3d = CreateCirclePoints(circles(0), circles(1), circles(2), strings, gpoints)
 
                 pm.Append(MeshPoints(pts(0), pts(1)))
                 pm.Append(MeshPoints(pts(1), pts(2)))
 
-                Dim ls As Point3d = SrtEnds(Edge.PointA)
-                Dim le As Point3d = SrtEnds(Edge.PointB)
+                Dim ls As Point3d = _sortEnds(Edge.PointA)
+                Dim le As Point3d = _sortEnds(Edge.PointB)
 
                 Dim pte(pts(0).Length - 1) As Point3d
 
@@ -244,14 +245,14 @@ Namespace Graphs
         End Function
 
         Private Function BuildStrut(Edge As UndirectedEdge) As PolyMesh
-            Dim circles() As Circle = SrtCircles(Edge)
-            Dim strings As Integer = SrtThick(Edge)
+            Dim circles() As Circle = _sortCircles(Edge)
+            Dim strings As Integer = _sortThick(Edge)
 
             Dim t0 As New Tuple(Of Integer, Integer, Integer)(Edge.PointA, Edge.PointB, 0)
             Dim t1 As New Tuple(Of Integer, Integer, Integer)(Edge.PointA, Edge.PointB, 1)
 
-            Dim points1()() As Point3d = CreateCirclePoints(circles(0), circles(1), circles(2), strings, SrtPoints(t0))
-            Dim points2()() As Point3d = CreateCirclePoints(circles(5), circles(4), circles(3), strings, SrtPoints(t1))
+            Dim points1()() As Point3d = CreateCirclePoints(circles(0), circles(1), circles(2), strings, _sortedPoints(t0))
+            Dim points2()() As Point3d = CreateCirclePoints(circles(5), circles(4), circles(3), strings, _sortedPoints(t1))
 
             Dim pm As New PolyMesh
 
@@ -260,7 +261,7 @@ Namespace Graphs
             pm.Append(MeshPoints(points2(0), points2(1)))
             pm.Append(MeshPoints(points2(1), points2(2)))
 
-            Dim inter()() As Point3d = InterpolatePointArrays(points1(2), FixOrientation(points1(2), points2(2)), SrtFaces(Edge))
+            Dim inter()() As Point3d = InterpolatePointArrays(points1(2), FixOrientation(points1(2), points2(2)), _sortFaces(Edge))
 
             For i As Integer = 0 To inter.Length - 2 Step 1
                 pm.Append(MeshPoints(inter(i), inter(i + 1)))
@@ -415,8 +416,8 @@ Namespace Graphs
                 thised.Orient()
                 grc.Edges.Add(thised)
 
-                SrtThick(thised) = Thickness(nind(ed))
-                SrtFaces(thised) = FacesCounts(nind(ed))
+                _sortThick(thised) = _thickness(nind(ed))
+                _sortFaces(thised) = _facesCounts(nind(ed))
             Next
 
             Graph = grc

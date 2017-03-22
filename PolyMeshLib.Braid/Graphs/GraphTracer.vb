@@ -2,58 +2,10 @@
 
 Namespace Graphs
 
+    ''' <summary>
+    ''' Given an undirected graph, this class enables you to trace paths in the graph, affecting it's directionality as you go (the edges you trace become oriented).
+    ''' </summary>
     Public Class GraphTracer
-
-        Public Structure EdgeState
-            Implements IComparable(Of EdgeState)
-
-            Private _value As Integer
-            Private _direction As Integer
-
-            Public Overrides Function ToString() As String
-                Return "EdgeState (" & Me.Value & ", " & Me.Direction & ")"
-            End Function
-
-            Public Property Value As Integer
-                Get
-                    Return _value
-                End Get
-                Set(value As Integer)
-                    _value = value
-                End Set
-            End Property
-
-            ''' <summary>
-            ''' 1 if the indices follow the edge direction, 0 if unassigned, -1 if go agains the indices
-            ''' </summary>
-            ''' <returns></returns>
-            Public Property Direction As Integer
-                Get
-                    Return _direction
-                End Get
-                Set(value As Integer)
-                    _direction = value
-                End Set
-            End Property
-
-
-            Sub New(Value As Integer, Direction As Boolean)
-                Me.Value = Value
-                Me.Direction = Direction
-            End Sub
-
-            Public Shared Function Empty() As EdgeState
-                Return New EdgeState(0, 0)
-            End Function
-
-            Public Function CompareTo(other As EdgeState) As Integer Implements IComparable(Of EdgeState).CompareTo
-                'If Me.Value < other.Value Then Return -1
-                'If Me.Value > other.Value Then Return 1
-                'If Me.Direction < other.Direction Then Return -1
-                'If Me.Direction > other.Direction Then Return 1
-                Return 0
-            End Function
-        End Structure
 
         Private _Points As New List(Of Point3d)
         Private _Graph As UndirectedGraphEdgeT(Of EdgeState)
@@ -67,7 +19,7 @@ Namespace Graphs
             Graph = G.Duplicate
 
             Reset()
-            Connections = Graph.GetAdjacencyMatrix()
+            AdjacencyMatrix = Graph.GetAdjacencyMatrix()
             Points.AddRange(VertexPoints)
         End Sub
 
@@ -89,7 +41,7 @@ Namespace Graphs
             End Set
         End Property
 
-        Private Property Connections As List(Of Integer)()
+        Private Property AdjacencyMatrix As List(Of Integer)()
             Get
                 Return _Connections
             End Get
@@ -176,23 +128,23 @@ Namespace Graphs
 
             Select Case thisedge.Value.Direction
                 Case 0
-                    Dim t1 As List(Of Integer) = TryEdgeThisWay(p1, p2, p3, p4, DontUseThoseVertices)
-                    If t1 Is Nothing Then t1 = TryEdgeThisWay(p1, p3, p2, p4, DontUseThoseVertices)
+                    Dim t1 As List(Of Integer) = TryThisEdge(p1, p2, p3, p4, DontUseThoseVertices)
+                    If t1 Is Nothing Then t1 = TryThisEdge(p1, p3, p2, p4, DontUseThoseVertices)
                     If t1 IsNot Nothing Then AddPath(t1) : Return True
                 Case -1
                     If p2 > p3 Then
-                        Dim t1 As List(Of Integer) = TryEdgeThisWay(p1, p2, p3, p4, DontUseThoseVertices)
+                        Dim t1 As List(Of Integer) = TryThisEdge(p1, p2, p3, p4, DontUseThoseVertices)
                         If t1 IsNot Nothing Then AddPath(t1) : Return True
                     ElseIf p2 < p3 Then
-                        Dim t1 As List(Of Integer) = TryEdgeThisWay(p1, p3, p2, p4, DontUseThoseVertices)
+                        Dim t1 As List(Of Integer) = TryThisEdge(p1, p3, p2, p4, DontUseThoseVertices)
                         If t1 IsNot Nothing Then AddPath(t1) : Return True
                     End If
                 Case 1
                     If p2 > p3 Then
-                        Dim t1 As List(Of Integer) = TryEdgeThisWay(p1, p3, p2, p4, DontUseThoseVertices)
+                        Dim t1 As List(Of Integer) = TryThisEdge(p1, p3, p2, p4, DontUseThoseVertices)
                         If t1 IsNot Nothing Then AddPath(t1) : Return True
                     ElseIf p2 < p3 Then
-                        Dim t1 As List(Of Integer) = TryEdgeThisWay(p1, p2, p3, p4, DontUseThoseVertices)
+                        Dim t1 As List(Of Integer) = TryThisEdge(p1, p2, p3, p4, DontUseThoseVertices)
                         If t1 IsNot Nothing Then AddPath(t1) : Return True
                     End If
             End Select
@@ -200,36 +152,6 @@ Namespace Graphs
             Return False
         End Function
 
-        Private Function TryEdgeThisWay(P1 As Integer, P2 As Integer, P3 As Integer, P4 As Integer, Optional donts As IEnumerable(Of Integer) = Nothing) As List(Of Integer)
-            Dim p12Skip(Graph.Vertices.Count - 1) As Boolean
-            p12Skip(P3) = True
-            p12Skip(P4) = True
-            If donts IsNot Nothing Then SetToTrue(p12Skip, donts)
-
-            Dim p12 As List(Of Integer) = FindPath(P1, P2, p12Skip)
-
-            If p12 IsNot Nothing Then
-                Dim p34Skip(Graph.Vertices.Count - 1) As Boolean
-                If donts IsNot Nothing Then SetToTrue(p34Skip, donts)
-                SetToTrue(p34Skip, p12)
-
-                Dim p34 As List(Of Integer) = FindPath(P3, P4, p34Skip)
-                If p34 IsNot Nothing Then
-                    Dim path As New List(Of Integer)(p12)
-                    path.AddRange(p34)
-                    Return path
-                End If
-            End If
-
-            Return Nothing
-        End Function
-
-
-        Private Sub SetToTrue(Bools() As Boolean, Indices As IEnumerable(Of Integer))
-            For i As Integer = 0 To Indices.Count - 1 Step 1
-                Bools(Indices(i)) = True
-            Next
-        End Sub
 
         Public Function TryAdd2PtPath(FromVertex As Integer, ToVertex As Integer, Optional DontUseThoseVertices As IEnumerable(Of Integer) = Nothing) As Boolean
             Dim visited(Graph.Vertices.Count - 1) As Boolean
@@ -315,6 +237,39 @@ Namespace Graphs
             If OneInMultipleOut Then DirectEdgesAllAround(Path)
 
         End Sub
+        ''' <summary>
+        ''' Tries to find a path throught the P2-P3 edge.
+        ''' </summary>
+        ''' <param name="P1"></param>
+        ''' <param name="P2"></param>
+        ''' <param name="P3"></param>
+        ''' <param name="P4"></param>
+        ''' <param name="donts"></param>
+        ''' <returns></returns>
+        Private Function TryThisEdge(P1 As Integer, P2 As Integer, P3 As Integer, P4 As Integer, Optional donts As IEnumerable(Of Integer) = Nothing) As List(Of Integer)
+            Dim p12Skip(Graph.Vertices.Count - 1) As Boolean
+            p12Skip(P3) = True
+            p12Skip(P4) = True
+            If donts IsNot Nothing Then SetToTrue(p12Skip, donts)
+
+            Dim p12 As List(Of Integer) = FindPath(P1, P2, p12Skip)
+
+            If p12 IsNot Nothing Then
+                Dim p34Skip(Graph.Vertices.Count - 1) As Boolean
+                If donts IsNot Nothing Then SetToTrue(p34Skip, donts)
+                SetToTrue(p34Skip, p12)
+
+                Dim p34 As List(Of Integer) = FindPath(P3, P4, p34Skip)
+                If p34 IsNot Nothing Then
+                    Dim path As New List(Of Integer)(p12)
+                    path.AddRange(p34)
+                    Return path
+                End If
+            End If
+
+            Return Nothing
+        End Function
+
 
         Private Sub DirectEdgesAllAround(Path As IEnumerable(Of Integer))
 
@@ -352,7 +307,7 @@ Namespace Graphs
             'Next
 
             For i As Integer = 0 To Graph.VertexCount - 1 Step 1
-                Dim thiscon As List(Of Integer) = Connections(i)
+                Dim thiscon As List(Of Integer) = AdjacencyMatrix(i)
 
                 Dim outwards As Integer = 0
                 Dim inwards As Integer = 0
@@ -459,7 +414,7 @@ Namespace Graphs
                     Dim thisind As Integer = thiscol(thiscol.Count - 1)
                     If thisind = Target Then Return thiscol 'for single point cases
 
-                    Dim thisadj As List(Of Integer) = Connections(thisind)
+                    Dim thisadj As List(Of Integer) = AdjacencyMatrix(thisind)
                     Dim thisadjcorrect As New List(Of Integer)
 
                     For j As Integer = 0 To thisadj.Count - 1 Step 1
@@ -499,6 +454,67 @@ Namespace Graphs
                 collections = nextcols
             Loop
         End Function
+
+        Private Sub SetToTrue(Bools() As Boolean, Indices As IEnumerable(Of Integer))
+            For i As Integer = 0 To Indices.Count - 1 Step 1
+                Bools(Indices(i)) = True
+            Next
+        End Sub
+
+
+#Region "Edge State helper structure"
+
+        Public Structure EdgeState
+            Implements IComparable(Of EdgeState)
+
+            Private _value As Integer
+            Private _direction As Integer
+
+            Sub New(Value As Integer, Direction As Boolean)
+                Me.Value = Value
+                Me.Direction = Direction
+            End Sub
+
+            Public Overrides Function ToString() As String
+                Return "EdgeState (" & Me.Value & ", " & Me.Direction & ")"
+            End Function
+
+            Public Property Value As Integer
+                Get
+                    Return _value
+                End Get
+                Set(value As Integer)
+                    _value = value
+                End Set
+            End Property
+
+            ''' <summary>
+            ''' 1 if the indices follow the edge direction, 0 if unassigned, -1 if go agains the indices
+            ''' </summary>
+            ''' <returns></returns>
+            Public Property Direction As Integer
+                Get
+                    Return _direction
+                End Get
+                Set(value As Integer)
+                    _direction = value
+                End Set
+            End Property
+
+            Public Shared Function Empty() As EdgeState
+                Return New EdgeState(0, 0)
+            End Function
+
+            Public Function CompareTo(other As EdgeState) As Integer Implements IComparable(Of EdgeState).CompareTo
+                'If Me.Value < other.Value Then Return -1
+                'If Me.Value > other.Value Then Return 1
+                'If Me.Direction < other.Direction Then Return -1
+                'If Me.Direction > other.Direction Then Return 1
+                Return 0
+            End Function
+        End Structure
+
+#End Region
 
     End Class
 

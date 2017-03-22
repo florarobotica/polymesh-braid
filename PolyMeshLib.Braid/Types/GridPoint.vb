@@ -1,5 +1,8 @@
 ﻿Namespace Types
 
+    ''' <summary>
+    ''' Helper structure to construct the strip geometry.
+    ''' </summary>
     Public Structure GridPoint
         Private _level As Integer
         Private _u As Integer
