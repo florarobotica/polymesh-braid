@@ -63,7 +63,10 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.vb" />
+    <Compile Include="Graphs\GraphBuilder.vb" />
+    <Compile Include="Graphs\GraphTracer.vb" />
+    <Compile Include="Graphs\MeshBuilder.vb" />
+    <Compile Include="Graphs\MeshWrap.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -79,6 +82,14 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Solvers\LengthEqualizer.vb" />
+    <Compile Include="Solvers\StripCountSolver.vb" />
+    <Compile Include="Types\GridPoint.vb" />
+    <Compile Include="Types\TileHash.vb" />
+    <Compile Include="Weaving\TileDictionary.vb" />
+    <Compile Include="Weaving\Utils.vb" />
+    <Compile Include="Weaving\Weaver.vb" />
+    <Compile Include="Weaving\WeaverFunctions.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -99,6 +110,7 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
