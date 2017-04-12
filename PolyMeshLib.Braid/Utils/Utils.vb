@@ -1,3 +1,4 @@
+Imports PolyMeshLib.Core
 Imports PolyMeshLib.Core.CommonTools.Geometrical
 Imports PolyMeshLib.Core.PointProcessing
 
@@ -65,7 +66,7 @@ Public Module BraidUtils
                 Dim thisline As New Line(Points(i), thish(j))
                 Dim param As Double
                 Dim plpar As Point3d
-                Intersections.LinePlane(thisline, fplane, plpar, param)
+                Intersections.LinePlane(thisline, fplane, param, plpar)
                 almostthere.Add(thisline.PointAt(param))
             Next
 
@@ -78,31 +79,6 @@ Public Module BraidUtils
         Next
 
         Return cirs
-    End Function
-
-    Public Function InscribedSphere(Tetrahedron As IEnumerable(Of Point3d)) As Sphere
-        Dim rp As New List(Of Plane)
-
-        For i As Integer = 0 To 2
-            Dim p1 As Point3d = Tetrahedron(i)
-            Dim p2 As Point3d = Tetrahedron((i + 1 + 4) Mod 4)
-            Dim p3 As Point3d = Tetrahedron((i + 2 + 4) Mod 4)
-            Dim p4 As Point3d = Tetrahedron((i + 3 + 4) Mod 4)
-            Dim midpt As Point3d = (p1 + p2) * 0.5
-
-            Dim pl1 As New Plane(midpt, midpt - p4, p1 - midpt)
-            Dim pl2 As New Plane(midpt, midpt - p3, p1 - midpt)
-
-            rp.Add(New Plane(midpt, (pl1.ZAxis + pl2.ZAxis) / 2))
-        Next
-
-        Dim int As New Point3d()
-        int = Intersections.PlanePlanePlane(rp(0), rp(1), rp(2))
-
-        Dim cpl As New Plane(Tetrahedron(0), Tetrahedron(1), Tetrahedron(2))
-        Dim dist As Double = Math.Abs(cpl.DistanceTo(int))
-
-        Return New Sphere(int, dist)
     End Function
 
     Public Function TangentPlanes(Tetrahedron As List(Of Point3d), S As Sphere) As List(Of Plane)
@@ -149,16 +125,6 @@ Public Module BraidUtils
         Return cirs
     End Function
 
-    ''' <summary>
-    ''' Constructs a set of 4, non-intersecting circles insider the tetrahedron. 
-    ''' InscribedSphere > TangentPlanes > TangentPlanesCircles
-    ''' </summary>
-    ''' <param name="Tetrahedron"></param>
-    ''' <returns></returns>
-    Public Function TetrahedronTangentCircles(Tetrahedron As List(Of Point3d)) As List(Of Circle)
-        Return TangentPlanesCircles(Tetrahedron, TangentPlanes(Tetrahedron, InscribedSphere(Tetrahedron)))
-    End Function
-
     Public Function TangentPlanesCircles(Tetrahedron As List(Of Point3d), Planes As List(Of Plane)) As List(Of Circle)
         Dim cirs As New List(Of Circle)
         For i As Integer = 0 To Tetrahedron.Count - 1 Step 1
@@ -176,7 +142,7 @@ Public Module BraidUtils
                 Dim thisl As New Line(thisorder(j), thisorder(0))
                 Dim parpl As Point3d
                 Dim param As Double
-                Intersections.LinePlane(thisl, pl, parpl, param)
+                Intersections.LinePlane(thisl, pl, param, parpl)
                 ints.Add(thisl.PointAt(param))
             Next
 
@@ -196,7 +162,7 @@ Public Module BraidUtils
             Dim param As Double = -1
             Dim plpar As Point3d = Point3d.Zero
 
-            If Intersections.LinePlane(l, pl, plpar, param) Then
+            If Intersections.LinePlane(l, pl, param, plpar) Then
                 If param > 0 And param < 1 Then
                     Dim l1 As New Line(l.From, l.PointAt(param))
                     Dim l2 As New Line(l.PointAt(param), l.To)

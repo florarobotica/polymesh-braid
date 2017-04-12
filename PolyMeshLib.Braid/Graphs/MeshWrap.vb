@@ -705,7 +705,7 @@ Namespace Graphs
                                ByRef MasterPoints As List(Of Point3d),
                                ByRef ChildPoints As List(Of Point3d)) As PolyMesh
 
-            Dim Master As Curve = Nothing
+            Dim Master As Arc = Nothing
             If MasterPoints IsNot Nothing Then MasterPoints.Clear()
             If MasterPoints Is Nothing Then MasterPoints = New List(Of Point3d)
 
@@ -715,17 +715,16 @@ Namespace Graphs
             Dim cparam As Double = MasterCircle.ClosestParameter(Child.Center)
 
             Dim ar As New Arc(MasterCircle.PointAt(MasterParamTo), MasterCircle.PointAt(cparam), MasterCircle.PointAt(MasterParamFrom))
-            Master = ar.ToNurbsCurve
-            Master.Domain = New Range(0, 1)
+            Master = ar
 
             Dim itC As New Range(0, Math.PI * 2)
             Dim nm As New PolyMesh
 
             If Strips = 1 Then
                 Dim cp1 As Point3d = Child.PointAt(itC.ValueAtParameter(0.25))
-                Dim mp1 As Point3d = (Master.PointAt(0))
+                Dim mp1 As Point3d = (Master.PointAtNormalizedParameter(0))
                 Dim cp2 As Point3d = Child.PointAt(itC.ValueAtParameter(0.75))
-                Dim mp2 As Point3d = (Master.PointAt(1))
+                Dim mp2 As Point3d = (Master.PointAtNormalizedParameter(1))
 
                 nm.Vertices.Add(cp1)
                 nm.Vertices.Add(mp1)
@@ -740,13 +739,13 @@ Namespace Graphs
             ElseIf Strips = 2 Then
 
                 Dim cp1 As Point3d = Child.PointAt(itC.ValueAtParameter(0.25))
-                Dim mp1 As Point3d = (Master.PointAt(0))
+                Dim mp1 As Point3d = (Master.PointAtNormalizedParameter(0))
 
                 Dim cp2 As Point3d = (Child.PointAt(itC.ValueAtParameter(0.25)) + Child.PointAt(itC.ValueAtParameter(0.75))) / 2
-                Dim mp2 As Point3d = (Master.PointAt(0.5))
+                Dim mp2 As Point3d = (Master.PointAtNormalizedParameter(0.5))
 
                 Dim cp3 As Point3d = Child.PointAt(itC.ValueAtParameter(0.75))
-                Dim mp3 As Point3d = (Master.PointAt(1))
+                Dim mp3 As Point3d = (Master.PointAtNormalizedParameter(1))
 
                 nm.Vertices.Add(cp1)
                 nm.Vertices.Add(mp1)
@@ -765,7 +764,7 @@ Namespace Graphs
                 'vertices 
                 For i As Integer = 0 To Strips Step 1
                     Dim cp As Point3d = Child.PointAt(itC.ValueAtParameter(i / Strips))
-                    Dim mp As Point3d = (Master.PointAt(i / Strips))
+                    Dim mp As Point3d = (Master.PointAtNormalizedParameter(i / Strips))
 
                     nm.Vertices.Add(cp)
                     nm.Vertices.Add(mp)

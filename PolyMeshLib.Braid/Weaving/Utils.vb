@@ -1,15 +1,11 @@
 ﻿Imports PolyMeshLib.Braid.Types
-Imports PolyMeshLib.Core.Types
 
 Public Module Utils
 
-    Function Curve2Strip(C As Curve) As List(Of GridPoint)
-        Dim pl As New Polyline
-        If Not C.TryGetPolyline(pl) Then Return Nothing
+    Function PolylineToStrip(P As Polyline) As List(Of GridPoint)
         Dim nl As New List(Of GridPoint)
-
-        For i As Integer = 0 To pl.Count - 1 Step 1
-            nl.Add(GridPoint.Create(pl(i).Z, pl(i).X, pl(i).Y))
+        For i As Integer = 0 To P.Count - 1 Step 1
+            nl.Add(GridPoint.Create(P(i).Z, P(i).X, P(i).Y))
         Next
         Return nl
     End Function
