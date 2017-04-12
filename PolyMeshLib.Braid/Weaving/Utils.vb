@@ -17,7 +17,7 @@ Public Module Utils
     Public Sub SubdivideWColors(ByRef P As PolyMesh, ByRef C As List(Of EdgeColor))
 
         Dim npm As New PolyMesh
-        npm.Vertices.AddRange(P.Vertices.ToPoint3d)
+        npm.Vertices.AddRange(P.Vertices)
 
         Dim te As List(Of TopologyEdge) = P.GetTopologyEdges
 

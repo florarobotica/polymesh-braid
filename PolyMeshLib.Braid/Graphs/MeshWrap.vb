@@ -240,7 +240,7 @@ Namespace Graphs
                 Dim av As Point3d = AveragePoints(x)
 
                 Dim vecdir As Vector3d = c - av
-                vecdir.Unitize()
+                vecdir.normalize()
                 vecdir *= c.DistanceTo(x(0))
 
                 Return c + vecdir
@@ -248,7 +248,7 @@ Namespace Graphs
                 Dim av As Point3d = AveragePoints(x)
 
                 Dim vec As Vector3d = av - c
-                vec.Unitize()
+                vec.normalize()
                 vec *= x(0).DistanceTo(c)
                 av = c - vec
 
@@ -386,7 +386,7 @@ Namespace Graphs
                             fakepoint += (Graph.Vertices(i) - triangle(0))
                             fakepoint += (Graph.Vertices(i) - triangle(1))
                             Dim trans As Vector3d = fakepoint - oldfake
-                            trans.Unitize()
+                            trans.normalize()
                             trans *= LooseCirclesRadius * 2
                             fakepoint = oldfake + trans
 
@@ -399,7 +399,7 @@ Namespace Graphs
                             Dim otherpts(loosepts.Length - 1) As Point3d
                             For j As Integer = 0 To loosepts.Length - 1 Step 1
                                 Dim vv As Vector3d = (fakepoint - Graph.Vertices(i))
-                                vv.Unitize()
+                                vv.normalize()
                                 vv *= LooseCirclesRadius * 2
                                 otherpts(j) = loosepts(j) + vv
                             Next
@@ -440,7 +440,7 @@ Namespace Graphs
                             fakepoint += (Graph.Vertices(i) - triangle(0))
                             fakepoint += (Graph.Vertices(i) - triangle(1))
                             Dim trans As Vector3d = fakepoint - oldfake
-                            trans.Unitize()
+                            trans.normalize()
                             trans *= LooseCirclesRadius * 2
                             fakepoint = oldfake + trans
 
@@ -453,7 +453,7 @@ Namespace Graphs
                             Dim otherpts(loosepts.Length - 1) As Point3d
                             For j As Integer = 0 To loosepts.Length - 1 Step 1
                                 Dim vv As Vector3d = (fakepoint - Graph.Vertices(i))
-                                vv.Unitize()
+                                vv.normalize()
                                 vv *= LooseCirclesRadius * 2
                                 otherpts(j) = loosepts(j) + vv
                             Next
@@ -505,7 +505,7 @@ Namespace Graphs
                         Next
 
                         If Not (outs(i)) Then sumall -= maxval
-                        hullpoints = FixCoplanar(hullpoints, Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)
+                        hullpoints = FixCoplanar(hullpoints, PolyMeshLib.Core.GeometrySettings.Tolerance)
 
                         If sumall = maxval And Not outs(i) Then
                             Dim circles As List(Of Circle) = MinimizeCircles(OrientCircles(MultipleCircles(hullpoints), masterindex))
@@ -601,8 +601,8 @@ Namespace Graphs
         Function FixCoplanar(Points As List(Of Point3d), Tolerance As Double) As List(Of Point3d)
             If Points.Count < 3 Then Return Points
 
-            Dim tp As Plane = Plane.WorldXY
-            Plane.FitPlaneToPoints(Points, tp)
+            Dim tp As Plane = Plane.XYPlane
+            tp = Plane.FitPlane(Points)
             Dim maxd As Double = 0
 
             For Each p In Points
@@ -616,7 +616,7 @@ Namespace Graphs
                 Dim c As Point3d = Points(i)
 
                 Dim nv As New Vector3d(_rnd.NextDouble - 0.5, _rnd.NextDouble - 0.5, _rnd.NextDouble - 0.5)
-                nv.Unitize()
+                nv.normalize()
                 nv *= Tolerance * 10
                 c = c + nv
                 Points(i) = c
@@ -682,7 +682,7 @@ Namespace Graphs
 
             For i As Integer = 0 To Points.Count - 1 Step 1
                 Dim p As Double
-                C.ClosestParameter(Points(i), p)
+                p = C.ClosestParameter(Points(i))
                 par(i) = p
             Next
 
@@ -712,20 +712,19 @@ Namespace Graphs
             If ChildPoints IsNot Nothing Then ChildPoints.Clear()
             If ChildPoints Is Nothing Then ChildPoints = New List(Of Point3d)
 
-            Dim cparam As Double
-            MasterCircle.ClosestParameter(Child.Center, cparam)
+            Dim cparam As Double = MasterCircle.ClosestParameter(Child.Center)
 
             Dim ar As New Arc(MasterCircle.PointAt(MasterParamTo), MasterCircle.PointAt(cparam), MasterCircle.PointAt(MasterParamFrom))
             Master = ar.ToNurbsCurve
-            Master.Domain = New Interval(0, 1)
+            Master.Domain = New Range(0, 1)
 
-            Dim itC As New Interval(0, Math.PI * 2)
+            Dim itC As New Range(0, Math.PI * 2)
             Dim nm As New PolyMesh
 
             If Strips = 1 Then
-                Dim cp1 As Point3d = Child.PointAt(itC.ParameterAt(0.25))
+                Dim cp1 As Point3d = Child.PointAt(itC.ValueAtParameter(0.25))
                 Dim mp1 As Point3d = (Master.PointAt(0))
-                Dim cp2 As Point3d = Child.PointAt(itC.ParameterAt(0.75))
+                Dim cp2 As Point3d = Child.PointAt(itC.ValueAtParameter(0.75))
                 Dim mp2 As Point3d = (Master.PointAt(1))
 
                 nm.Vertices.Add(cp1)
@@ -740,13 +739,13 @@ Namespace Graphs
 
             ElseIf Strips = 2 Then
 
-                Dim cp1 As Point3d = Child.PointAt(itC.ParameterAt(0.25))
+                Dim cp1 As Point3d = Child.PointAt(itC.ValueAtParameter(0.25))
                 Dim mp1 As Point3d = (Master.PointAt(0))
 
-                Dim cp2 As Point3d = (Child.PointAt(itC.ParameterAt(0.25)) + Child.PointAt(itC.ParameterAt(0.75))) / 2
+                Dim cp2 As Point3d = (Child.PointAt(itC.ValueAtParameter(0.25)) + Child.PointAt(itC.ValueAtParameter(0.75))) / 2
                 Dim mp2 As Point3d = (Master.PointAt(0.5))
 
-                Dim cp3 As Point3d = Child.PointAt(itC.ParameterAt(0.75))
+                Dim cp3 As Point3d = Child.PointAt(itC.ValueAtParameter(0.75))
                 Dim mp3 As Point3d = (Master.PointAt(1))
 
                 nm.Vertices.Add(cp1)
@@ -763,10 +762,9 @@ Namespace Graphs
                 MasterPoints.Add(mp3)
                 ChildPoints.Add(cp3)
             Else
-
                 'vertices 
                 For i As Integer = 0 To Strips Step 1
-                    Dim cp As Point3d = Child.PointAt(itC.ParameterAt(i / Strips))
+                    Dim cp As Point3d = Child.PointAt(itC.ValueAtParameter(i / Strips))
                     Dim mp As Point3d = (Master.PointAt(i / Strips))
 
                     nm.Vertices.Add(cp)

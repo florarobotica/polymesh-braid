@@ -228,7 +228,7 @@ Namespace Graphs
             For i As Integer = 0 To _NodeCount - 1 Step 1
                 Dim pt As New Point3d(_Radius, 0, _Levels.Count * Height)
                 Dim ang As Double = Math.PI * 2 * (i / _NodeCount)
-                pt.Transform(Transform.Rotation(ang, Vector3d.ZAxis, Point3d.Origin))
+                pt.Transform(TMatrix.Rotate(Point3d.Zero, Vector3d.ZAxis, ang))
                 pts(i) = pt
             Next
 

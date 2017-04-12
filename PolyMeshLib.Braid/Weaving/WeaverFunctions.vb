@@ -4,7 +4,6 @@ Imports PolyMeshLib.Braid.Types.GridPoint
 
 Namespace Weaving
 
-
     ''' <summary>
     ''' A set of functions for the Weaver.
     ''' </summary>
@@ -75,7 +74,7 @@ Namespace Weaving
         End Function
 
         Friend Function LineFromMiddle(MiddlePt As Point3d, Direction As Vector3d, Length As Double) As Line
-            Direction.Unitize()
+            Direction.normalize()
             Return New Line(MiddlePt - (Direction * Length * 0.5), Direction, Length)
         End Function
 

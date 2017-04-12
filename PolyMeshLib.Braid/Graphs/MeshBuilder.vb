@@ -75,7 +75,7 @@ Namespace Graphs
 
                     For Each Index As Integer In ThisConn
                         Dim ThisCorn As Point3d = Graph.Vertices(Index)
-                        ThisCorn.Transform(Transform.Scale(Graph.Vertices(i), Proportion))
+                        ThisCorn.Transform(TMatrix.Scale(Graph.Vertices(i), Proportion))
                         Dim ThisVec As Vector3d = Graph.Vertices(i) - ThisCorn
                         TriVec.Add(ThisVec)
                         Triangle.Add(ThisCorn)
@@ -183,7 +183,7 @@ Namespace Graphs
                 End If
             Next
 
-            pm.Weld(Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)
+            pm.Weld(PolyMeshLib.Core.GeometrySettings.Tolerance)
             pm.UnifyFaceNormals()
 
             Return pm
@@ -359,14 +359,14 @@ Namespace Graphs
                 Dim cg As Circle = circles(thisg)
                 Dim ci As Circle = circles(thisi)
 
-                Dim trans As Transform = Transform.PlaneToPlane(cg.Plane, ci.Plane)
-                Dim scale As Transform = Transform.Scale(ci.Center, ci.Radius / cg.Radius)
+                Dim trans As TMatrix = TMatrix.PlaneToPlane(cg.Plane, ci.Plane)
+                Dim scale As TMatrix = TMatrix.Scale(ci.Center, ci.Radius / cg.Radius)
 
                 Dim totl(Strings * 2 - 1) As Double
                 Dim totj(Strings * 2 - 1) As Integer
 
                 For j As Integer = 0 To Strings * 2 - 1 Step 1
-                    Dim rotate As Transform = Transform.Rotation(((j / (Strings * 2)) * Math.PI * 2), ci.Plane.ZAxis, ci.Plane.Origin)
+                    Dim rotate As TMatrix = TMatrix.Rotate(ci.Plane.Origin, ci.Plane.ZAxis, ((j / (Strings * 2)) * Math.PI * 2))
                     Dim sum As Double = 0
 
                     For k As Integer = 0 To thisset.Length - 1 Step 1
@@ -383,7 +383,7 @@ Namespace Graphs
 
                 Array.Sort(totl, totj)
 
-                Dim rotateFinal As Transform = Transform.Rotation(((totj(0) / (Strings * 2)) * Math.PI * 2), ci.Plane.ZAxis, ci.Plane.Origin)
+                Dim rotateFinal As TMatrix = TMatrix.Rotate(ci.Plane.Origin, ci.Plane.ZAxis, ((totj(0) / (Strings * 2)) * Math.PI * 2))
 
                 For j As Integer = 0 To thisset.Length - 1 Step 1
                     Dim tp As Point3d = thisset(j)
@@ -407,7 +407,7 @@ Namespace Graphs
             Next
 
             Dim nind As New SortedList(Of UndirectedEdge, Integer)
-            Graph = GraphFactory.LinesToUGraph(l, Rhino.RhinoDoc.ActiveDoc.ModelAbsoluteTolerance * 2, nind)
+            Graph = GraphFactory.LinesToUGraph(l, PolyMeshLib.Core.GeometrySettings.Tolerance * 2, nind)
 
             Dim grc As New UndirectedGraph(Of Point3d)(Graph.Vertices)
 
@@ -429,7 +429,7 @@ Namespace Graphs
 
             For i As Integer = 0 To 1 Step 1
                 Dim cir As Circle = Circles(i)
-                cir.Reverse()
+                cir.Flip()
                 Circles(i) = cir
             Next
 
@@ -507,22 +507,20 @@ Namespace Graphs
             Dim medium As Circle = cir(1)
             Dim small As Circle = cir(0)
 
-            Dim cp As Double = 0
-            large.ClosestParameter(cir(0).Center, cp)
+            Dim cp As Double = large.ClosestParameter(cir(0).Center)
 
             cp -= Math.PI * 0.5
-            large.Transform(Transform.Rotation(cp, large.Plane.ZAxis, large.Plane.Origin))
+            large.Transform(TMatrix.Rotate(large.Plane.Origin, large.Plane.ZAxis, cp))
 
             'smallest circle gets 0->Pi, medium goes from Pi->2*Pi
 
-            medium.ClosestParameter(large.Center, cp)
+            cp = medium.ClosestParameter(large.Center)
             cp += Math.PI
-            medium.Transform(Transform.Rotation(cp, medium.Plane.ZAxis, medium.Plane.Origin))
+            medium.Transform(TMatrix.Rotate(medium.Plane.Origin, medium.Plane.ZAxis, cp))
 
-
-            small.ClosestParameter(large.Center, cp)
+            cp = small.ClosestParameter(large.Center)
             cp += Math.PI
-            small.Transform(Transform.Rotation(cp, small.Plane.ZAxis, small.Plane.Origin))
+            small.Transform(TMatrix.Rotate(small.Plane.Origin, small.Plane.ZAxis, cp))
 
             Return {small, medium, large}.ToList
         End Function
@@ -533,7 +531,7 @@ Namespace Graphs
             For i As Integer = 0 To Triangle.Count - 1 Step 1
                 Dim thist As Point3d = Triangle(i)
                 Dim unit As Vector3d = Triangle(i) - Tip
-                unit.Unitize()
+                unit.Normalize()
                 thist += unit * PrimaryCircles(i).Radius * 4
                 circles.Add(New Circle(New Plane(thist, Tip - thist), PrimaryCircles(i).Radius))
             Next
@@ -548,8 +546,8 @@ Namespace Graphs
                 Dim v1 As Vector3d = PrimaryCircles(i).Center - Triangle(i)
                 Dim v2 As Vector3d = TriVec(i)
 
-                v1.Unitize()
-                v2.Unitize()
+                v1.Normalize()
+                v2.Normalize()
 
                 Dim cen As Point3d = Triangle(i)
 
