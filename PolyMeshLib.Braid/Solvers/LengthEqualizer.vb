@@ -16,7 +16,7 @@ Namespace Solvers
             Values = New SortedList(Of DirectedEdge, Integer)
 
             Dim adj() As List(Of Integer) = Graph.GetAdjacencyMatrix
-            Dim rev() As List(Of Integer) = GraphBase.TransposeAdjacencyMatrix(adj)
+            Dim rev() As List(Of Integer) = GraphBase.TransposeMatrix(adj)
             Dim sources As List(Of Integer) = GraphBase.FindSources(adj)
 
             Dim walks As New List(Of List(Of Integer))

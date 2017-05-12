@@ -36,7 +36,8 @@ Namespace Solvers
         Public Function Solve(Graph As UndirectedGraph(Of Point3d), Sources As IEnumerable(Of Integer), Optional MinimalValue As Integer = 3, Optional SolverType As Integer = 0) As DirectedGraph(Of Point3d)
             Dim Adjacent() As List(Of Integer) = Graph.GetAdjacencyMatrix()
             Dim Dir As New SortedList(Of UndirectedEdge, Integer)
-            Dim paths As List(Of List(Of Integer)) = GraphBase.BreadthFirstTree(Sources, Adjacent)
+            Dim vis() As Boolean = Nothing
+            Dim paths As List(Of List(Of Integer)) = GraphBase.BreadthFirstTree(Sources, Adjacent, vis)
 
             Dim ord As New List(Of Integer)
 

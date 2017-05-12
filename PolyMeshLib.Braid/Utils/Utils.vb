@@ -65,8 +65,7 @@ Public Module BraidUtils
             For j As Integer = 0 To thish.Count - 1 Step 1
                 Dim thisline As New Line(Points(i), thish(j))
                 Dim param As Double
-                Dim plpar As Point3d
-                Intersections.LinePlane(thisline, fplane, param, plpar)
+                Intersections.LinePlane(thisline, fplane, param)
                 almostthere.Add(thisline.PointAt(param))
             Next
 
@@ -140,9 +139,8 @@ Public Module BraidUtils
 
             For j As Integer = 1 To thisorder.Count - 1 Step 1
                 Dim thisl As New Line(thisorder(j), thisorder(0))
-                Dim parpl As Point3d
                 Dim param As Double
-                Intersections.LinePlane(thisl, pl, param, parpl)
+                Intersections.LinePlane(thisl, pl, param)
                 ints.Add(thisl.PointAt(param))
             Next
 
@@ -160,9 +158,8 @@ Public Module BraidUtils
         For i As Integer = 0 To P.SegmentCount - 1 Step 1
             Dim l As Line = P.SegmentAt(i)
             Dim param As Double = -1
-            Dim plpar As Point3d = Point3d.Zero
 
-            If Intersections.LinePlane(l, pl, param, plpar) Then
+            If Intersections.LinePlane(l, pl, param) Then
                 If param > 0 And param < 1 Then
                     Dim l1 As New Line(l.From, l.PointAt(param))
                     Dim l2 As New Line(l.PointAt(param), l.To)

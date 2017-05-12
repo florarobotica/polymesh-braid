@@ -1,6 +1,4 @@
-﻿Imports PolyMeshLib.Core.Graphs
-
-Namespace Graphs
+﻿Namespace Graphs
 
     ''' <summary>
     ''' Given an undirected graph, this class enables you to trace paths in the graph, affecting it's directionality as you go (the edges you trace become oriented).

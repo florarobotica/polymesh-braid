@@ -10,14 +10,15 @@
     <AssemblyName>PolyMeshLib.Braid</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Windows</MyType>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>D:\OneDrive\SharedBuilds\</OutputPath>
+    <OutputPath>D:\OneDrive\SharedBuilds\PolyMesh\</OutputPath>
     <DocumentationFile>PolyMeshLib.Braid.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
@@ -26,7 +27,7 @@
     <DefineDebug>false</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
-    <OutputPath>D:\OneDrive\SharedBuilds\</OutputPath>
+    <OutputPath>D:\OneDrive\SharedBuilds\PolyMesh\</OutputPath>
     <DocumentationFile>PolyMeshLib.Braid.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
@@ -44,7 +45,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PolyMeshLib.Core">
-      <HintPath>D:\OneDrive\SharedBuilds\PolyMeshLib.Core.dll</HintPath>
+      <HintPath>D:\OneDrive\SharedBuilds\PolyMesh\PolyMeshLib.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Related.Core, Version=1.0.6340.1831, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\OneDrive\SharedBuilds\PolyMesh\Related.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -58,10 +64,13 @@
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
     <Import Include="PolyMeshLib.Core.Types" />
+    <Import Include="Related.Edges" />
+    <Import Include="Related.Graphs" />
+    <Import Include="Related.Sets" />
+    <Import Include="Related.Vertices" />
     <Import Include="System" />
     <Import Include="System.Collections" />
     <Import Include="System.Collections.Generic" />
-    <Import Include="System.Data" />
     <Import Include="System.Diagnostics" />
     <Import Include="System.Linq" />
     <Import Include="System.Xml.Linq" />
