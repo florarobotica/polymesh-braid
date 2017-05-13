@@ -78,6 +78,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Graphs\GraphBuilder.vb" />
+    <Compile Include="Graphs\GraphExtensions.vb" />
     <Compile Include="Graphs\GraphTracer.vb" />
     <Compile Include="Graphs\MeshBuilder.vb" />
     <Compile Include="Graphs\MeshWrap.vb" />
