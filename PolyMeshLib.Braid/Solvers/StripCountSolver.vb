@@ -1,4 +1,4 @@
-﻿Imports PolyMeshLib.Core.Graphs
+﻿Imports Related.Abstract
 
 Namespace Solvers
 

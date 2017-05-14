@@ -1,4 +1,4 @@
-﻿Imports PolyMeshLib.Core.Graphs
+﻿Imports Related.Abstract
 
 Namespace Solvers
 
@@ -17,12 +17,12 @@ Namespace Solvers
 
             Dim adj() As List(Of Integer) = Graph.GetAdjacencyMatrix
             Dim rev() As List(Of Integer) = GraphBase.TransposeMatrix(adj)
-            Dim sources As List(Of Integer) = GraphBase.FindSources(adj)
+            Dim sources As List(Of Integer) = DirectedGraphBase.FindSources(adj)
 
             Dim walks As New List(Of List(Of Integer))
 
             For i As Integer = 0 To sources.Count - 1 Step 1
-                walks.AddRange(Graph.FindAllWalks(sources(i), adj))
+                walks.AddRange(DirectedGraphBase.FindAllWalks(sources(i), adj))
             Next
 
             Dim vertexvalues(Graph.VertexCount - 1) As Integer
