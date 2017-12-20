@@ -13,14 +13,14 @@ Namespace Graphs
         End Enum
 
         <Extension()>
-        Public Function CollapseGraph(Graph As Related.Graphs.NestedGraph, Optional Collapse As CollapseMethod = CollapseMethod.LowestHighest, Optional CollapseValues() As Double = Nothing) As Boolean
+        Public Function CollapseGraph(Graph As Related.Graphs.NodeGraph, Optional Collapse As CollapseMethod = CollapseMethod.LowestHighest, Optional CollapseValues() As Double = Nothing) As Boolean
 
             If CollapseValues Is Nothing Then
 
                 Select Case Collapse
                     Case CollapseMethod.LowestHighest, CollapseMethod.LowestLowest
 
-                        Dim Leafs As List(Of NestedGraph) = Graph.GetLeafs()
+                        Dim Leafs As List(Of NodeGraph) = Graph.GetLeafs()
                         Dim Index As Integer = -1
 
                         While Leafs.Count > 1
@@ -34,8 +34,8 @@ Namespace Graphs
 
                             Array.Sort(Values, Indices)
 
-                            Dim Leaf1 As NestedGraph = Leafs(Indices(0))
-                            Dim Leaf2 As NestedGraph = Nothing
+                            Dim Leaf1 As NodeGraph = Leafs(Indices(0))
+                            Dim Leaf2 As NodeGraph = Nothing
 
                             If Collapse = CollapseMethod.LowestLowest Then
                                 Leaf2 = Leafs(Indices(1))
@@ -43,7 +43,7 @@ Namespace Graphs
                                 Leaf2 = Leafs(Indices(Indices.Length - 1))
                             End If
 
-                            Dim NewKid As New NestedGraph(Index, Leaf1.Value + Leaf2.Value)
+                            Dim NewKid As New NodeGraph(Index, Leaf1.Value + Leaf2.Value)
                             Index -= 1
 
                             Leaf1.AddChild(NewKid)
@@ -52,7 +52,7 @@ Namespace Graphs
                             Leafs.Clear()
                             Leafs = Graph.GetLeafs()
 
-                            Dim NextLeafs As New List(Of NestedGraph)
+                            Dim NextLeafs As New List(Of NodeGraph)
                             Dim Ids As New HashSet(Of Integer)
 
                             For i As Integer = 0 To Leafs.Count - 1 Step 1
@@ -72,7 +72,7 @@ Namespace Graphs
                 Select Case Collapse
                     Case CollapseMethod.LowestHighest, CollapseMethod.LowestLowest
 
-                        Dim Leafs As List(Of NestedGraph) = Graph.GetLeafs()
+                        Dim Leafs As List(Of NodeGraph) = Graph.GetLeafs()
                         Dim Index As Integer = -1
 
                         While Leafs.Count > 1
@@ -86,8 +86,8 @@ Namespace Graphs
 
                             Array.Sort(Values, Indices)
 
-                            Dim Leaf1 As NestedGraph = Leafs(Indices(0))
-                            Dim Leaf2 As NestedGraph = Nothing
+                            Dim Leaf1 As NodeGraph = Leafs(Indices(0))
+                            Dim Leaf2 As NodeGraph = Nothing
 
                             If Collapse = CollapseMethod.LowestLowest Then
                                 Leaf2 = Leafs(Indices(1))
@@ -95,7 +95,7 @@ Namespace Graphs
                                 Leaf2 = Leafs(Indices(Indices.Length - 1))
                             End If
 
-                            Dim NewKid As New NestedGraph(Index, Leaf1.Value + Leaf2.Value)
+                            Dim NewKid As New NodeGraph(Index, Leaf1.Value + Leaf2.Value)
                             Index -= 1
 
                             Leaf1.AddChild(NewKid)
@@ -104,7 +104,7 @@ Namespace Graphs
                             Leafs.Clear()
                             Leafs = Graph.GetLeafs()
 
-                            Dim NextLeafs As New List(Of NestedGraph)
+                            Dim NextLeafs As New List(Of NodeGraph)
                             Dim Ids As New HashSet(Of Integer)
 
                             For i As Integer = 0 To Leafs.Count - 1 Step 1
@@ -124,8 +124,8 @@ Namespace Graphs
         End Function
 
         <Extension()>
-        Public Sub GrowGraph(Graph As NestedGraph, Instructions As IEnumerable(Of Double))
-            Dim Leafs As List(Of NestedGraph) = Graph.GetLeafs()
+        Public Sub GrowGraph(Graph As NodeGraph, Instructions As IEnumerable(Of Double))
+            Dim Leafs As List(Of NodeGraph) = Graph.GetLeafs()
             Dim Current As Integer = 0
             Dim ID As Integer = 1
 
@@ -139,10 +139,10 @@ Namespace Graphs
                         Leafs = Graph.GetLeafs
                         Current = 0
                     Case < 1
-                        Dim Node As NestedGraph = Leafs(Current)
-                        Node.AddChild(New NestedGraph(ID, Instruction * Node.Value))
+                        Dim Node As NodeGraph = Leafs(Current)
+                        Node.AddChild(New NodeGraph(ID, Instruction * Node.Value))
                         ID += 1
-                        Node.AddChild(New NestedGraph(ID, (1 - Instruction) * Node.Value))
+                        Node.AddChild(New NodeGraph(ID, (1 - Instruction) * Node.Value))
                         ID += 1
                         Current += 1
                     Case Else
@@ -179,21 +179,21 @@ Namespace Graphs
 
 #Region "MeshCount"
 
-        Public Sub ComputeMeshCounts(Graph As NestedGraph, Optional AddFaces As Integer = 0)
+        Public Sub ComputeMeshCounts(Graph As NodeGraph, Optional AddFaces As Integer = 0)
             Graph.Value = 4
-            Dim Leafs As List(Of NestedGraph) = Graph.GetLeafs()
+            Dim Leafs As List(Of NodeGraph) = Graph.GetLeafs()
             Leafs(0).Value = 3
             Accumulate(Graph, Leafs(0).ID, AddFaces)
             CorrectValues(Graph, Leafs(0).ID)
             Leafs(0).Value = 3
-            Dim Flat As New SortedList(Of Integer, NestedGraph)
-            NestedGraph.FlatTree(Graph, Flat)
+            Dim Flat As New SortedList(Of Integer, NodeGraph)
+            NodeGraph.FlatTree(Graph, Flat)
             For i As Integer = 0 To Flat.Count - 1 Step 1
                 Flat(Flat.Keys(i)).Value += AddFaces
             Next
         End Sub
 
-        Private Sub Accumulate(Graph As NestedGraph, LastID As Integer, Addition As Integer)
+        Private Sub Accumulate(Graph As NodeGraph, LastID As Integer, Addition As Integer)
             'accumulate in endpoints
             For i As Integer = 0 To Graph.Children.Count - 1 Step 1
                 If Graph.Children(i).ID = LastID Then
@@ -205,13 +205,13 @@ Namespace Graphs
             Next
         End Sub
 
-        Private Sub CorrectValues(Graph As NestedGraph, LastID As Integer)
-            Dim Sorted As New SortedList(Of Integer, NestedGraph)
-            NestedGraph.FlatTree(Graph, Sorted)
+        Private Sub CorrectValues(Graph As NodeGraph, LastID As Integer)
+            Dim Sorted As New SortedList(Of Integer, NodeGraph)
+            NodeGraph.FlatTree(Graph, Sorted)
             Correction(Sorted(LastID))
         End Sub
 
-        Private Sub Correction(Graph As NestedGraph)
+        Private Sub Correction(Graph As NodeGraph)
             If Graph.ID = 0 Then Graph.Value = 4 : Return
             Dim LargestValue As Integer = 0
             For i As Integer = 0 To Graph.Parents.Count - 1 Step 1
@@ -230,14 +230,14 @@ Namespace Graphs
         ''' </summary>
         ''' <param name="Graph"></param>
         ''' <param name="MinimalValue"></param>
-        Public Sub OptimizeSplits(Graph As NestedGraph, MinimalValue As Integer, Minimize As Boolean, ByRef CollapseValues() As Double)
-            Dim ls As New SortedList(Of Integer, NestedGraph)
-            NestedGraph.FlatTree(Graph, ls)
-            Dim l As New List(Of NestedGraph)(ls.Values)
+        Public Sub OptimizeSplits(Graph As NodeGraph, MinimalValue As Integer, Minimize As Boolean, ByRef CollapseValues() As Double)
+            Dim ls As New SortedList(Of Integer, NodeGraph)
+            NodeGraph.FlatTree(Graph, ls)
+            Dim l As New List(Of NodeGraph)(ls.Values)
 
             Dim cv(l.Count - 1) As Double
 
-            Dim srt(l.Count - 1) As NestedGraph
+            Dim srt(l.Count - 1) As NodeGraph
             Dim smallest As Double = Double.MaxValue
             For i As Integer = 0 To l.Count - 1 Step 1
                 srt(l(i).ID) = l(i)
@@ -282,13 +282,13 @@ Namespace Graphs
 
             For i As Integer = 0 To vi.Length - 1 Step 1
                 Dim thisindex As Integer = vi(i)
-                Dim thisnode As NestedGraph = srt(thisindex)
+                Dim thisnode As NodeGraph = srt(thisindex)
 
                 If thisindex = 0 Then
                     thisnode.Value = val(thisnode.Children(0).ID) + val(thisnode.Children(1).ID)
                 Else
 
-                    Dim thispar As NestedGraph = thisnode.Parents(0)
+                    Dim thispar As NodeGraph = thisnode.Parents(0)
                     If one(thisindex) <> -1 And two(thisindex) <> -1 Then
                         srt(thisindex).Value = one(thisnode.ID) + two(thisnode.ID)
                         val(thisindex) = srt(thisindex).Value
@@ -304,7 +304,7 @@ Namespace Graphs
                 End If
             Next
 
-            For Each n As NestedGraph In l
+            For Each n As NodeGraph In l
                 n.Value *= MinimalValue
             Next
         End Sub

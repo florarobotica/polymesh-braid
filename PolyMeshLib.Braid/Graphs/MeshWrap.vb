@@ -1,23 +1,23 @@
-﻿Imports PolyMeshLib.Core.Types
-Imports PolyMeshLib.Core.CommonTools
-Imports PolyMeshLib.Core.Graphs
+﻿Imports Polys.Core.Types
+Imports Polys.Core.CommonTools
+Imports Related.Graphs
 
 Namespace Graphs
 
     Public Class MeshWrap
 
         Private _nodes As New SortedList(Of Integer, PolyMesh)
-        Private _struts As New SortedList(Of UndirectedEdge, PolyMesh)
+        Private _struts As New SortedList(Of UEdge, PolyMesh)
         Private _others As New SortedList(Of Integer, PolyMesh)
         Private _naked As New SortedList(Of Integer, Polyline)
 
-        Private _graph As UndirectedGraph(Of Point3d) = Nothing
+        Private _graph As UGraph(Of Point3d) = Nothing
         Private _Vconn() As List(Of Integer)
 
-        Private _strutPoints As New SortedList(Of UndirectedEdge(Of Integer), Point3d())
+        Private _strutPoints As New SortedList(Of UEdge(Of Integer), Point3d())
 
-        Private _stripsEdge As New SortedList(Of UndirectedEdge, Integer)
-        Private _facesEdge As New SortedList(Of UndirectedEdge, Integer)
+        Private _stripsEdge As New SortedList(Of UEdge, Integer)
+        Private _facesEdge As New SortedList(Of UEdge, Integer)
 
         Private _singRadius As Double = 1
         Private _looseCount As Integer = 5
@@ -34,7 +34,7 @@ Namespace Graphs
         ''' <param name="G"></param>
         ''' <param name="StripsPerEdge"></param>
         ''' <param name="FacesPerEdge"></param>
-        Sub New(G As UndirectedGraph(Of Point3d), StripsPerEdge As SortedList(Of UndirectedEdge, Integer), FacesPerEdge As SortedList(Of UndirectedEdge, Integer))
+        Sub New(G As UGraph(Of Point3d), StripsPerEdge As SortedList(Of UEdge, Integer), FacesPerEdge As SortedList(Of UEdge, Integer))
             Graph = G
             VertexConnections = G.GetAdjacencyMatrix
             FacesEdge = FacesPerEdge
@@ -68,11 +68,11 @@ Namespace Graphs
         ''' The resulting strut geometry, sorted by edge.
         ''' </summary>
         ''' <returns></returns>
-        Public Property Struts As SortedList(Of UndirectedEdge, PolyMesh)
+        Public Property Struts As SortedList(Of UEdge, PolyMesh)
             Get
                 Return _struts
             End Get
-            Set(value As SortedList(Of UndirectedEdge, PolyMesh))
+            Set(value As SortedList(Of UEdge, PolyMesh))
                 _struts = value
             End Set
         End Property
@@ -81,11 +81,11 @@ Namespace Graphs
         ''' The points used to construct the geometry.
         ''' </summary>
         ''' <returns></returns>
-        Public Property StrutPoints As SortedList(Of UndirectedEdge(Of Integer), Point3d())
+        Public Property StrutPoints As SortedList(Of UEdge(Of Integer), Point3d())
             Get
                 Return _strutPoints
             End Get
-            Set(value As SortedList(Of UndirectedEdge(Of Integer), Point3d()))
+            Set(value As SortedList(Of UEdge(Of Integer), Point3d()))
                 _strutPoints = value
             End Set
         End Property
@@ -148,11 +148,11 @@ Namespace Graphs
             End Set
         End Property
 
-        Public Property Graph As UndirectedGraph(Of Point3d)
+        Public Property Graph As UGraph(Of Point3d)
             Get
                 Return _graph
             End Get
-            Set(value As UndirectedGraph(Of Point3d))
+            Set(value As UGraph(Of Point3d))
                 _graph = value
             End Set
         End Property
@@ -166,20 +166,20 @@ Namespace Graphs
             End Set
         End Property
 
-        Public Property StripsEdge As SortedList(Of UndirectedEdge, Integer)
+        Public Property StripsEdge As SortedList(Of UEdge, Integer)
             Get
                 Return _stripsEdge
             End Get
-            Set(value As SortedList(Of UndirectedEdge, Integer))
+            Set(value As SortedList(Of UEdge, Integer))
                 _stripsEdge = value
             End Set
         End Property
 
-        Public Property FacesEdge As SortedList(Of UndirectedEdge, Integer)
+        Public Property FacesEdge As SortedList(Of UEdge, Integer)
             Get
                 Return _facesEdge
             End Get
-            Set(value As SortedList(Of UndirectedEdge, Integer))
+            Set(value As SortedList(Of UEdge, Integer))
                 _facesEdge = value
             End Set
         End Property
@@ -240,7 +240,7 @@ Namespace Graphs
                 Dim av As Point3d = AveragePoints(x)
 
                 Dim vecdir As Vector3d = c - av
-                vecdir.normalize()
+                vecdir.Normalize()
                 vecdir *= c.DistanceTo(x(0))
 
                 Return c + vecdir
@@ -248,7 +248,7 @@ Namespace Graphs
                 Dim av As Point3d = AveragePoints(x)
 
                 Dim vec As Vector3d = av - c
-                vec.normalize()
+                vec.Normalize()
                 vec *= x(0).DistanceTo(c)
                 av = c - vec
 
@@ -262,12 +262,12 @@ Namespace Graphs
 
             Dim success As Boolean = True
 
-            For Each ed As UndirectedEdge In Graph.Edges
+            For Each ed As UEdge In Graph.Edges
                 If StripsEdge(ed) < 1 Then Continue For
-                Dim thiskeyfrom As New UndirectedEdge(Of Integer)(ed.PointA, ed.PointB, ed.PointA)
-                Dim thiskeyto As New UndirectedEdge(Of Integer)(ed.PointA, ed.PointB, ed.PointB)
+                Dim thiskeyfrom As New UEdge(Of Integer)(ed.PointA, ed.PointB, ed.PointA)
+                Dim thiskeyto As New UEdge(Of Integer)(ed.PointA, ed.PointB, ed.PointB)
 
-                Dim divs As Integer = FacesEdge(New UndirectedEdge(thiskeyfrom.PointA, thiskeyfrom.PointB))
+                Dim divs As Integer = FacesEdge(New UEdge(thiskeyfrom.PointA, thiskeyfrom.PointB))
                 If (Not StrutPoints.ContainsKey(thiskeyfrom)) Or (Not StrutPoints.ContainsKey(thiskeyto)) Then Continue For
 
                 Dim pt1 As List(Of Point3d) = StrutPoints(thiskeyfrom).ToList
@@ -315,7 +315,7 @@ Namespace Graphs
                 Dim thisconnclean As New List(Of Integer)
 
                 For j As Integer = 0 To thisconn.Count - 1 Step 1
-                    Dim thisedge As New UndirectedEdge(i, thisconn(j))
+                    Dim thisedge As New UEdge(i, thisconn(j))
                     If StripsEdge(thisedge) > 0 Then thisconnclean.Add(thisconn(j))
                 Next
 
@@ -325,20 +325,20 @@ Namespace Graphs
                     Case 0 'nothing
 
                     Case 1 'pointed stick, but still has to add the points to the strut
-                        Dim thisedge As UndirectedEdge = New UndirectedEdge(i, thisconn(0))
+                        Dim thisedge As UEdge = New UEdge(i, thisconn(0))
                         Dim thiscircle As New Circle(New Plane(Graph.Vertices(i), Graph.Vertices(i) - Graph.Vertices(thisconn(0))), LooseCirclesRadius)
                         Dim strips As Integer = StripsEdge(thisedge)
 
                         Dim pts() As Point3d = DivideCircle(thiscircle, strips, True)
-                        StrutPoints(New UndirectedEdge(Of Integer)(i, thisconn(0), i)) = pts
+                        StrutPoints(New UEdge(Of Integer)(i, thisconn(0), i)) = pts
 
                         Dim aspl As New Polyline(pts)
                         '   aspl.Add(aspl(0))
                         EndEdges(i) = aspl
 
                     Case 2 'elbow
-                        Dim strips1 As Integer = StripsEdge(New UndirectedEdge(i, thisconn(0)))
-                        Dim strips2 As Integer = StripsEdge(New UndirectedEdge(i, thisconn(1)))
+                        Dim strips1 As Integer = StripsEdge(New UEdge(i, thisconn(0)))
+                        Dim strips2 As Integer = StripsEdge(New UEdge(i, thisconn(1)))
 
                         Dim thisnode As PolyMesh = Nothing
 
@@ -358,7 +358,7 @@ Namespace Graphs
                             For j As Integer = 0 To thisconn.Count - 1 Step 1
                                 Dim pts() As Point3d = DivideCircle(circles(j), strips1, True)
                                 ptss.Add(pts)
-                                StrutPoints(New UndirectedEdge(Of Integer)(i, thisconn(j), i)) = pts
+                                StrutPoints(New UEdge(Of Integer)(i, thisconn(j), i)) = pts
                             Next
 
                             Dim pls As New List(Of Polyline)
@@ -367,7 +367,7 @@ Namespace Graphs
                             pls(1).Reverse()
                             thisnode = PolyMesh.LoftPolylines(pls)
 
-                        ElseIf ((math.max(strips1, strips2) - Math.Min(strips1, strips2)) <= AllowSingular) And (Not (outs(i))) Then
+                        ElseIf ((Math.Max(strips1, strips2) - Math.Min(strips1, strips2)) <= AllowSingular) And (Not (outs(i))) Then
 
                             Dim triangle As New List(Of Point3d)
                             Dim strips(2) As Integer
@@ -377,7 +377,7 @@ Namespace Graphs
                                 Dim vec As Vector3d = Graph.Vertices(VertexConnections(i)(j)) - Graph.Vertices(i)
                                 vec *= Truncation
                                 triangle.Add(Graph.Vertices(i) + vec)
-                                Dim thisedge As UndirectedEdge = New UndirectedEdge(i, VertexConnections(i)(j))
+                                Dim thisedge As UEdge = New UEdge(i, VertexConnections(i)(j))
                                 strips(j) = StripsEdge(thisedge)
                             Next
 
@@ -386,7 +386,7 @@ Namespace Graphs
                             fakepoint += (Graph.Vertices(i) - triangle(0))
                             fakepoint += (Graph.Vertices(i) - triangle(1))
                             Dim trans As Vector3d = fakepoint - oldfake
-                            trans.normalize()
+                            trans.Normalize()
                             trans *= LooseCirclesRadius * 2
                             fakepoint = oldfake + trans
 
@@ -399,7 +399,7 @@ Namespace Graphs
                             Dim otherpts(loosepts.Length - 1) As Point3d
                             For j As Integer = 0 To loosepts.Length - 1 Step 1
                                 Dim vv As Vector3d = (fakepoint - Graph.Vertices(i))
-                                vv.normalize()
+                                vv.Normalize()
                                 vv *= LooseCirclesRadius * 2
                                 otherpts(j) = loosepts(j) + vv
                             Next
@@ -417,7 +417,7 @@ Namespace Graphs
                             EndEdges(i) = pl(pl.Count - 1)
 
                             For j As Integer = 0 To 1 Step 1
-                                StrutPoints(New UndirectedEdge(Of Integer)(i, VertexConnections(i)(j), i)) = trianglepoints(j)
+                                StrutPoints(New UEdge(Of Integer)(i, VertexConnections(i)(j), i)) = trianglepoints(j)
                             Next
 
 
@@ -431,7 +431,7 @@ Namespace Graphs
                                 vec *= Truncation
                                 triangle.Add(Graph.Vertices(i) + vec)
 
-                                Dim thisedge As UndirectedEdge = New UndirectedEdge(i, VertexConnections(i)(j))
+                                Dim thisedge As UEdge = New UEdge(i, VertexConnections(i)(j))
                                 strips(j) = StripsEdge(thisedge)
                             Next
 
@@ -440,7 +440,7 @@ Namespace Graphs
                             fakepoint += (Graph.Vertices(i) - triangle(0))
                             fakepoint += (Graph.Vertices(i) - triangle(1))
                             Dim trans As Vector3d = fakepoint - oldfake
-                            trans.normalize()
+                            trans.Normalize()
                             trans *= LooseCirclesRadius * 2
                             fakepoint = oldfake + trans
 
@@ -453,7 +453,7 @@ Namespace Graphs
                             Dim otherpts(loosepts.Length - 1) As Point3d
                             For j As Integer = 0 To loosepts.Length - 1 Step 1
                                 Dim vv As Vector3d = (fakepoint - Graph.Vertices(i))
-                                vv.normalize()
+                                vv.Normalize()
                                 vv *= LooseCirclesRadius * 2
                                 otherpts(j) = loosepts(j) + vv
                             Next
@@ -471,7 +471,7 @@ Namespace Graphs
                             EndEdges(i) = pl(pl.Count - 1)
 
                             For j As Integer = 0 To 1 Step 1
-                                StrutPoints(New UndirectedEdge(Of Integer)(i, VertexConnections(i)(j), i)) = trianglepoints(j)
+                                StrutPoints(New UEdge(Of Integer)(i, VertexConnections(i)(j), i)) = trianglepoints(j)
                             Next
 
                         End If
@@ -485,7 +485,7 @@ Namespace Graphs
                         Dim vals As New List(Of Integer)
 
                         For j As Integer = 0 To thisconn.Count - 1 Step 1
-                            Dim thisedge As UndirectedEdge = New UndirectedEdge(i, thisconn(j))
+                            Dim thisedge As UEdge = New UEdge(i, thisconn(j))
                             Dim vec As Vector3d = Graph.Vertices(thisconn(j)) - Graph.Vertices(i)
                             vec *= Truncation
                             hullpoints.Add(Graph.Vertices(i) + vec)
@@ -505,7 +505,7 @@ Namespace Graphs
                         Next
 
                         If Not (outs(i)) Then sumall -= maxval
-                        hullpoints = FixCoplanar(hullpoints, PolyMeshLib.Core.GeometrySettings.Tolerance)
+                        hullpoints = FixCoplanar(hullpoints, Polys.Core.GeometrySettings.Tolerance)
 
                         If sumall = maxval And Not outs(i) Then
                             Dim circles As List(Of Circle) = MinimizeCircles(OrientCircles(MultipleCircles(hullpoints), masterindex))
@@ -515,7 +515,7 @@ Namespace Graphs
                             Dim allp As New List(Of Point3d)
 
                             For j As Integer = 0 To masterindexs.Length - 1 Step 1
-                                Dim childedge As UndirectedEdge(Of Integer) = New UndirectedEdge(Of Integer)(i, thisconn(masterindexs(j)), i)
+                                Dim childedge As UEdge(Of Integer) = New UEdge(Of Integer)(i, thisconn(masterindexs(j)), i)
 
                                 Dim parfrom As Double = masterparams((j - 1 + masterparams.Length) Mod masterparams.Length) Mod (2 * Math.PI)
                                 Dim parto As Double = masterparams(j) Mod (2 * Math.PI)
@@ -532,7 +532,7 @@ Namespace Graphs
 
                             allp = PointCleanup(allp, circles(masterindex))
                             allp.Add(allp(0))
-                            StrutPoints(New UndirectedEdge(Of Integer)(i, thisconn(masterindex), i)) = allp.ToArray
+                            StrutPoints(New UEdge(Of Integer)(i, thisconn(masterindex), i)) = allp.ToArray
                         Else
                             Dim fakepoint As Point3d = InventPoint(hullpoints, Graph.Vertices(i))
                             Dim fakesum As Integer = sumall
@@ -551,7 +551,7 @@ Namespace Graphs
                             Dim allp As New List(Of Point3d)
 
                             For j As Integer = 0 To masterindexs.Length - 1 Step 1
-                                Dim childedge As UndirectedEdge(Of Integer) = New UndirectedEdge(Of Integer)(i, thisconn(masterindexs(j)), i)
+                                Dim childedge As UEdge(Of Integer) = New UEdge(Of Integer)(i, thisconn(masterindexs(j)), i)
 
                                 Dim parfrom As Double = masterparams((j - 1 + masterparams.Length) Mod masterparams.Length) Mod (2 * Math.PI)
                                 Dim parto As Double = masterparams(j) Mod (2 * Math.PI)

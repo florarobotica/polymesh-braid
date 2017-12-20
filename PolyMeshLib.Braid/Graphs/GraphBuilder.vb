@@ -1,13 +1,14 @@
-﻿Imports PolyMeshLib.Core.Graphs
+﻿Imports Related.Graphs
+Imports Polys.Core.Types
 
 Namespace Graphs
 
     ''' <summary>
-    ''' Creates geometry representing a directed graph. Use with NestedGraph.
+    ''' Creates geometry representing a directed graph. Use with NodeGraph.
     ''' </summary>
     Public Class GraphBuilder
 
-        Private _Graph As NestedGraph = Nothing
+        Private _Graph As NodeGraph = Nothing
         Private _NodeIndex As New SortedList(Of Integer, Integer)
 
         Private _Levels As New List(Of Point3d())
@@ -89,7 +90,7 @@ Namespace Graphs
         ''' </summary>
         ''' <param name="Graph"></param>
         ''' <returns></returns>
-        Public Function Build(Graph As NestedGraph) As SortedList(Of Integer, Polyline)
+        Public Function Build(Graph As NodeGraph) As SortedList(Of Integer, Polyline)
             _Levels.Clear()
             _Lines.Clear()
             _LinesIndex.Clear()
@@ -97,14 +98,14 @@ Namespace Graphs
 
             _Graph = Graph
             _NodeCount = TotalNodeCount(_Graph)
-            _NodeLevel = PolyMeshLib.Core.CommonTools.CreateArray(_NodeCount, 0)
+            _NodeLevel = Polys.Core.CommonTools.CreateArray(_NodeCount, 0)
             AddLevel()
 
-            Dim ls As New List(Of NestedGraph)
+            Dim ls As New List(Of NodeGraph)
             ls.Add(_Graph)
 
             While ls.Count > 0
-                Dim nt As New List(Of NestedGraph)
+                Dim nt As New List(Of NodeGraph)
                 For i As Integer = 0 To ls.Count - 1 Step 1
                     nt.AddRange(BuildSplitNode(ls(i)))
                 Next
@@ -144,7 +145,7 @@ Namespace Graphs
 
 #Region "Privates"
 
-        Private Sub BuildMergeNode(Node As NestedGraph, LastOne As Boolean)
+        Private Sub BuildMergeNode(Node As NodeGraph, LastOne As Boolean)
             Dim Index As Integer = _NodeIndex(Node.ID)
 
             If Node IsNot Nothing Then
@@ -158,7 +159,7 @@ Namespace Graphs
                 Dim thislevel As Integer = _NodeLevel(Index)
 
                 For j As Integer = 0 To Node.Parents.Count - 1 Step 1
-                    Dim thisc As NestedGraph = Node.Parents(j)
+                    Dim thisc As NodeGraph = Node.Parents(j)
                     Dim thiscidx As Integer = _NodeIndex(thisc.ID)
 
                     Dim pp3 As Point3d = PointAt(thiscidx)
@@ -183,9 +184,9 @@ Namespace Graphs
 
         End Sub
 
-        Private Function BuildSplitNode(Node As NestedGraph) As List(Of NestedGraph)
+        Private Function BuildSplitNode(Node As NodeGraph) As List(Of NodeGraph)
             Dim thisidx As Integer = _NodeIndex(Node.ID)
-            Dim thislist As New List(Of NestedGraph)
+            Dim thislist As New List(Of NodeGraph)
 
             AddLevel()
             Dim pp1 As Point3d = PointAt(thisidx)
@@ -199,7 +200,7 @@ Namespace Graphs
                 If Node.Children(i).ID < 0 Then
                     Continue For
                 Else
-                    Dim thisc As NestedGraph = Node.Children(i)
+                    Dim thisc As NodeGraph = Node.Children(i)
                     Dim thiscidx As Integer = _NodeIndex(thisc.ID)
                     MoveUp(thiscidx, _Levels.Count - 1)
                     _Lines.Add(New Line(pp2, PointAt(thiscidx)))
@@ -235,7 +236,7 @@ Namespace Graphs
             Return pts
         End Function
 
-        Private Function TotalNodeCount(Tree As NestedGraph) As Integer
+        Private Function TotalNodeCount(Tree As NodeGraph) As Integer
             Dim cnt As Integer = 0
             Dim cntd As New HashSet(Of Integer)
             CountAllUniqueChildren(Tree, cnt, cntd)
@@ -251,7 +252,7 @@ Namespace Graphs
             Return cnt
         End Function
 
-        Private Sub CountAllUniqueChildren(ByRef tree As NestedGraph, ByRef count As Integer, ByRef counted As HashSet(Of Integer))
+        Private Sub CountAllUniqueChildren(ByRef tree As NodeGraph, ByRef count As Integer, ByRef counted As HashSet(Of Integer))
             If Not counted.Contains(tree.ID) Then
                 counted.Add(tree.ID)
                 count += 1

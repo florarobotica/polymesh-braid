@@ -6,13 +6,13 @@
     Public Class GraphTracer
 
         Private _Points As New List(Of Point3d)
-        Private _Graph As UndirectedGraphEdgeT(Of EdgeState)
+        Private _Graph As UGraphEdge(Of EdgeState)
         Private _Connections() As List(Of Integer)
         Private _Paths As New List(Of List(Of Integer))
         Private _Polylines As New List(Of Polyline)
         Private _oneinmultipleout As Boolean = True
 
-        Sub New(G As UndirectedGraphEdgeT(Of EdgeState), VertexPoints As IEnumerable(Of Point3d))
+        Sub New(G As UGraphEdge(Of EdgeState), VertexPoints As IEnumerable(Of Point3d))
 
             Graph = G.Duplicate
 
@@ -30,11 +30,11 @@
             End Set
         End Property
 
-        Public Property Graph As UndirectedGraphEdgeT(Of EdgeState)
+        Public Property Graph As UGraphEdge(Of EdgeState)
             Get
                 Return _Graph
             End Get
-            Set(value As UndirectedGraphEdgeT(Of EdgeState))
+            Set(value As UGraphEdge(Of EdgeState))
                 _Graph = value
             End Set
         End Property
@@ -76,7 +76,7 @@
         End Property
 
         Public Sub Reset()
-            For Each k As UndirectedEdge(Of EdgeState) In Graph.Edges
+            For Each k As UEdge(Of EdgeState) In Graph.Edges
                 k.Value = New EdgeState(0, 0)
             Next
 
@@ -103,7 +103,7 @@
         Public Function SourceTargetAllEdges(Source As Integer, Target As Integer, Optional DontUseThoseVertices As IEnumerable(Of Integer) = Nothing) As Boolean
             Dim allok As Boolean = True
             Dim eds As New List(Of EdgeBase)
-            For Each ed As UndirectedEdge(Of EdgeState) In Graph.Edges
+            For Each ed As UEdge(Of EdgeState) In Graph.Edges
                 If ed.PointA = Source Or ed.PointA = Target Or ed.PointB = Source Or ed.PointB = Target Then Continue For
 
                 eds.Add(ed)
@@ -122,7 +122,7 @@
             Dim p3 As Integer = EdgePtB
             Dim p4 As Integer = ToVertex
 
-            Dim thisedge As UndirectedEdge(Of EdgeState) = Graph.Edges(New UndirectedEdge(Of EdgeState)(EdgePtA, EdgePtB, EdgeState.Empty))
+            Dim thisedge As UEdge(Of EdgeState) = Graph.Edges(New UEdge(Of EdgeState)(EdgePtA, EdgePtB, EdgeState.Empty))
 
             Select Case thisedge.Value.Direction
                 Case 0
@@ -204,7 +204,7 @@
         Private Sub AddPath(Path As IEnumerable(Of Integer))
 
             For i As Integer = 0 To Path.Count - 2 Step 1
-                Dim thiskey As New UndirectedEdge(Of EdgeState)(Path(i), Path(i + 1), EdgeState.Empty)
+                Dim thiskey As New UEdge(Of EdgeState)(Path(i), Path(i + 1), EdgeState.Empty)
                 thiskey = Graph.Edges(thiskey) 'get the actual edge and values
                 Dim thisstate As EdgeState = thiskey.Value
                 thisstate.Value = thisstate.Value + 1
@@ -219,7 +219,7 @@
             Polylines.Add(pl)
 
             For i As Integer = 0 To Path.Count - 2 Step 1
-                Dim thiskey As New UndirectedEdge(Of EdgeState)(Path(i), Path(i + 1), EdgeState.Empty)
+                Dim thiskey As New UEdge(Of EdgeState)(Path(i), Path(i + 1), EdgeState.Empty)
                 Dim thisstate As EdgeState = Graph.Edges(thiskey).Value
                 If Path(i) < Path(i + 1) Then
                     thisstate.Direction = 1
@@ -278,7 +278,7 @@
 
             '    For j As Integer = 0 To thiscon.Count - 1 Step 1
             '        If thiscon(j) = prevp Then Continue For
-            '        Dim ed As UndirectedEdge(Of EdgeState) = Graph.Edges.Item(New UndirectedEdge(Of EdgeState)(thisp, thiscon(j), EdgeState.Empty))
+            '        Dim ed As UEdge(Of EdgeState) = Graph.Edges.Item(New UEdge(Of EdgeState)(thisp, thiscon(j), EdgeState.Empty))
 
             '        Dim thisstate As EdgeState = ed.Value
 
@@ -312,7 +312,7 @@
                 Dim neutral As Integer = 0
 
                 For j As Integer = 0 To thiscon.Count - 1 Step 1
-                    Dim ed As UndirectedEdge(Of EdgeState) = Graph.Edges.Item(New UndirectedEdge(Of EdgeState)(i, thiscon(j), EdgeState.Empty))
+                    Dim ed As UEdge(Of EdgeState) = Graph.Edges.Item(New UEdge(Of EdgeState)(i, thiscon(j), EdgeState.Empty))
                     Select Case ed.Value.Direction
                         Case -1
                             If i < thiscon(j) Then inwards += 1
@@ -330,7 +330,7 @@
                         'everything outwards
 
                         For j As Integer = 0 To thiscon.Count - 1 Step 1
-                            Dim ed As UndirectedEdge(Of EdgeState) = Graph.Edges.Item(New UndirectedEdge(Of EdgeState)(i, thiscon(j), EdgeState.Empty))
+                            Dim ed As UEdge(Of EdgeState) = Graph.Edges.Item(New UEdge(Of EdgeState)(i, thiscon(j), EdgeState.Empty))
                             If ed.Value.Direction <> 0 Then Continue For
 
                             Dim thisstate As EdgeState = ed.Value
@@ -345,7 +345,7 @@
                         'everything inwards 
 
                         For j As Integer = 0 To thiscon.Count - 1 Step 1
-                            Dim ed As UndirectedEdge(Of EdgeState) = Graph.Edges.Item(New UndirectedEdge(Of EdgeState)(i, thiscon(j), EdgeState.Empty))
+                            Dim ed As UEdge(Of EdgeState) = Graph.Edges.Item(New UEdge(Of EdgeState)(i, thiscon(j), EdgeState.Empty))
                             If ed.Value.Direction <> 0 Then Continue For
 
                             Dim thisstate As EdgeState = ed.Value
@@ -371,7 +371,7 @@
 
         '    For i As Integer = 0 To thiscon.Count - 1 Step 1
         '        If thiscon(i) = ComingFromVertex Then Continue For
-        '        Dim ed As UndirectedEdge(Of EdgeState) = Graph.Edges.Item(New UndirectedEdge(Of EdgeState)(Vertex, thiscon(i), EdgeState.Empty))
+        '        Dim ed As UEdge(Of EdgeState) = Graph.Edges.Item(New UEdge(Of EdgeState)(Vertex, thiscon(i), EdgeState.Empty))
         '        If ed.Value.Direction <> 0 Then Continue For
 
         '        If Vertex < thiscon(i) Then
@@ -416,7 +416,7 @@
                     Dim thisadjcorrect As New List(Of Integer)
 
                     For j As Integer = 0 To thisadj.Count - 1 Step 1
-                        Dim thiskey As UndirectedEdge(Of EdgeState) = New UndirectedEdge(Of EdgeState)(thisind, thisadj(j), EdgeState.Empty)
+                        Dim thiskey As UEdge(Of EdgeState) = New UEdge(Of EdgeState)(thisind, thisadj(j), EdgeState.Empty)
                         thiskey = Graph.Edges(thiskey)
                         Dim thisnei As Integer = thisadj(j)
 

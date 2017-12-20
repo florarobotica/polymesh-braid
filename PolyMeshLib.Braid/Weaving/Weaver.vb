@@ -1,5 +1,5 @@
-﻿Imports PolyMeshLib.Core.Types
-Imports PolyMeshLib.Braid.Types
+﻿Imports Polys.Core.Types
+Imports Polys.Braid.Types
 
 Namespace Weaving
 

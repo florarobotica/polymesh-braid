@@ -9,20 +9,20 @@ Namespace Solvers
         End Sub
 
         Public Property AllPathsEqual As Boolean = True
-        Public Property Values As SortedList(Of DirectedEdge, Integer)
+        Public Property Values As SortedList(Of DEdge, Integer)
         Public Property Extension As Integer = 0
 
-        Public Sub Solve(Graph As DirectedGraph(Of Point3d))
-            Values = New SortedList(Of DirectedEdge, Integer)
+        Public Sub Solve(Graph As DGraph(Of Point3d))
+            Values = New SortedList(Of DEdge, Integer)
 
             Dim adj() As List(Of Integer) = Graph.GetAdjacencyMatrix
             Dim rev() As List(Of Integer) = GraphBase.TransposeMatrix(adj)
-            Dim sources As List(Of Integer) = DirectedGraphBase.FindSources(adj)
+            Dim sources As List(Of Integer) = DGraphBase.FindSources(adj)
 
             Dim walks As New List(Of List(Of Integer))
 
             For i As Integer = 0 To sources.Count - 1 Step 1
-                walks.AddRange(DirectedGraphBase.FindAllWalks(sources(i), adj))
+                walks.AddRange(DGraphBase.FindAllWalks(sources(i), adj))
             Next
 
             Dim vertexvalues(Graph.VertexCount - 1) As Integer
@@ -66,13 +66,13 @@ Namespace Solvers
                     End If
                 Next
 
-                For Each ed As DirectedEdge In Graph.Edges
+                For Each ed As DEdge In Graph.Edges
                     Dim d As Integer = vertexvalues(ed.To) - vertexvalues(ed.From)
                     d = 1 + ((d - 1) * 2)
                     Values.Add(ed, d)
                 Next
 
-                For Each ed As DirectedEdge In Graph.Edges
+                For Each ed As DEdge In Graph.Edges
                     Dim con As List(Of Integer) = adj(ed.To)
                     Dim revcon As List(Of Integer) = rev(ed.To)
 
@@ -85,7 +85,7 @@ Namespace Solvers
                     End If
                 Next
             Else
-                For Each ed As DirectedEdge In Graph.Edges
+                For Each ed As DEdge In Graph.Edges
                     Dim d As Integer = vertexvalues(ed.To) - vertexvalues(ed.From)
                     d = 1 + ((d - 1) * 2)
                     Values.Add(ed, d)

@@ -8,13 +8,13 @@ Namespace Solvers
 
         End Sub
 
-        Private _solvedvalues As SortedList(Of DirectedEdge, Integer)
+        Private _solvedvalues As SortedList(Of DEdge, Integer)
 
-        Public Property EdgeValues As SortedList(Of DirectedEdge, Integer)
+        Public Property EdgeValues As SortedList(Of DEdge, Integer)
             Get
                 Return _solvedvalues
             End Get
-            Set(value As SortedList(Of DirectedEdge, Integer))
+            Set(value As SortedList(Of DEdge, Integer))
                 _solvedvalues = value
             End Set
         End Property
@@ -33,9 +33,9 @@ Namespace Solvers
         ''' <param name="MinimalValue"></param>
         ''' <param name="SolverType">0:VertexOrder 1:BFS 2:ReverseBFS 3+:Random</param>
         ''' <returns></returns>
-        Public Function Solve(Graph As UndirectedGraph(Of Point3d), Sources As IEnumerable(Of Integer), Optional MinimalValue As Integer = 3, Optional SolverType As Integer = 0) As DirectedGraph(Of Point3d)
+        Public Function Solve(Graph As UGraph(Of Point3d), Sources As IEnumerable(Of Integer), Optional MinimalValue As Integer = 3, Optional SolverType As Integer = 0) As DGraph(Of Point3d)
             Dim Adjacent() As List(Of Integer) = Graph.GetAdjacencyMatrix()
-            Dim Dir As New SortedList(Of UndirectedEdge, Integer)
+            Dim Dir As New SortedList(Of UEdge, Integer)
             Dim vis() As Boolean = Nothing
             Dim paths As List(Of List(Of Integer)) = GraphBase.BreadthFirstTree(Sources, Adjacent, vis)
 
@@ -84,42 +84,42 @@ Namespace Solvers
 
             For Each pth As List(Of Integer) In paths
                 For i As Integer = 0 To pth.Count - 2 Step 1
-                    Dir(New UndirectedEdge(pth(i), pth(i + 1))) = If(pth(i) < pth(i + 1), 1, -1)
+                    Dir(New UEdge(pth(i), pth(i + 1))) = If(pth(i) < pth(i + 1), 1, -1)
                 Next
             Next
 
             DirectByRow(Dir, rows, Adjacent, ord)
 
-            Dim subgr As New DirectedGraph(Of Double)
+            Dim subgr As New DGraph(Of Double)
             For Each p As Point3d In Graph.Vertices
                 subgr.Vertices.Add(0)
             Next
 
-            For Each k As UndirectedEdge In Dir.Keys
+            For Each k As UEdge In Dir.Keys
                 If Dir(k) = 1 Then
-                    If k.PointA < k.PointB Then subgr.Edges.Add(New DirectedEdge(k.PointA, k.PointB))
-                    If k.PointA > k.PointB Then subgr.Edges.Add(New DirectedEdge(k.PointB, k.PointA))
+                    If k.PointA < k.PointB Then subgr.Edges.Add(New DEdge(k.PointA, k.PointB))
+                    If k.PointA > k.PointB Then subgr.Edges.Add(New DEdge(k.PointB, k.PointA))
                 Else
-                    If k.PointA > k.PointB Then subgr.Edges.Add(New DirectedEdge(k.PointA, k.PointB))
-                    If k.PointA < k.PointB Then subgr.Edges.Add(New DirectedEdge(k.PointB, k.PointA))
+                    If k.PointA > k.PointB Then subgr.Edges.Add(New DEdge(k.PointA, k.PointB))
+                    If k.PointA < k.PointB Then subgr.Edges.Add(New DEdge(k.PointB, k.PointA))
                 End If
             Next
 
-            Dim values As SortedList(Of DirectedEdge, Integer) = PropagateValues(subgr, Sources, MinimalValue)
+            Dim values As SortedList(Of DEdge, Integer) = PropagateValues(subgr, Sources, MinimalValue)
 
             Dim dirvals As New List(Of Integer)
 
-            If EdgeValues Is Nothing Then EdgeValues = New SortedList(Of DirectedEdge, Integer)
+            If EdgeValues Is Nothing Then EdgeValues = New SortedList(Of DEdge, Integer)
             EdgeValues.Clear()
 
-            For Each k As DirectedEdge In subgr.Edges
+            For Each k As DEdge In subgr.Edges
                 EdgeValues(k) = (values(k))
             Next
 
-            Dim outgr As New DirectedGraph(Of Point3d)
+            Dim outgr As New DGraph(Of Point3d)
             outgr.Vertices.AddRange(Graph.Vertices)
 
-            For Each ed As DirectedEdge In subgr.Edges
+            For Each ed As DEdge In subgr.Edges
                 outgr.Edges.Add(ed)
             Next
 
@@ -136,7 +136,7 @@ Namespace Solvers
             Return row
         End Function
 
-        Private Sub DirectByRow(ByRef dir As SortedList(Of UndirectedEdge, Integer), rows() As Integer, adj() As List(Of Integer), Optional SolveOrder As List(Of Integer) = Nothing)
+        Private Sub DirectByRow(ByRef dir As SortedList(Of UEdge, Integer), rows() As Integer, adj() As List(Of Integer), Optional SolveOrder As List(Of Integer) = Nothing)
             Dim pos() As Integer = Nothing
             Dim neg() As Integer = Nothing
             GetStates(dir, adj, pos, neg)
@@ -167,7 +167,7 @@ Namespace Solvers
                         If neirow <= myrow Then Continue For
                     End If
 
-                    Dim thisk As New UndirectedEdge(thisv, thisn)
+                    Dim thisk As New UEdge(thisv, thisn)
                     If dir.ContainsKey(thisk) Then Continue For
 
                     Dim vertstate As Integer = EvaluateState(pos(thisv), neg(thisv))
@@ -187,9 +187,9 @@ Namespace Solvers
             Next
         End Sub
 
-        Private Function PropagateValues(gr As DirectedGraph(Of Double), sources As IEnumerable(Of Integer), minvalue As Integer) As SortedList(Of DirectedEdge, Integer)
+        Private Function PropagateValues(gr As DGraph(Of Double), sources As IEnumerable(Of Integer), minvalue As Integer) As SortedList(Of DEdge, Integer)
             Dim adj() As List(Of Integer) = gr.GetAdjacencyMatrix
-            Dim srt As New SortedList(Of DirectedEdge, Integer)
+            Dim srt As New SortedList(Of DEdge, Integer)
 
             Dim paths As New List(Of List(Of Integer))
             For Each src As Integer In sources
@@ -223,13 +223,13 @@ Namespace Solvers
                 If Not runit Then Exit Do
             Loop
 
-            For Each ed As DirectedEdge In gr.Edges
+            For Each ed As DEdge In gr.Edges
                 srt(ed) = 0
             Next
 
             For i As Integer = 0 To paths.Count - 1 Step 1
                 For j As Integer = 0 To paths(i).Count - 2 Step 1
-                    Dim thiskey As DirectedEdge = New DirectedEdge(paths(i)(j), paths(i)(j + 1))
+                    Dim thiskey As DEdge = New DEdge(paths(i)(j), paths(i)(j + 1))
                     srt(thiskey) = srt(thiskey) + minvalue
                 Next
             Next
@@ -246,7 +246,7 @@ Namespace Solvers
             Return -1
         End Function
 
-        Private Sub GetStates(dir As SortedList(Of UndirectedEdge, Integer), adj() As List(Of Integer), ByRef positive() As Integer, ByRef negative() As Integer)
+        Private Sub GetStates(dir As SortedList(Of UEdge, Integer), adj() As List(Of Integer), ByRef positive() As Integer, ByRef negative() As Integer)
             ReDim positive(adj.Length - 1)
             ReDim negative(adj.Length - 1)
 
@@ -256,7 +256,7 @@ Namespace Solvers
 
                 For j As Integer = 0 To thisnei.Count - 1 Step 1
                     Dim thisn As Integer = thisnei(j)
-                    Dim thisk As New UndirectedEdge(thisv, thisn)
+                    Dim thisk As New UEdge(thisv, thisn)
                     If Not dir.ContainsKey(thisk) Then Continue For
 
                     If thisn < thisv Then

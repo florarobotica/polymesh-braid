@@ -1,6 +1,7 @@
-Imports PolyMeshLib.Core
-Imports PolyMeshLib.Core.CommonTools.Geometrical
-Imports PolyMeshLib.Core.PointProcessing
+Imports Polys.Core
+Imports Polys.Core.CommonTools.Geometrical
+Imports Polys.Core.PointProcessing
+
 
 Public Module BraidUtils
 
@@ -25,7 +26,7 @@ Public Module BraidUtils
         Points = npoints
 
         Dim qh As New QuickHull(Points)
-        If Not qh.Solve(PolyMeshLib.Core.GeometrySettings.Tolerance) Then Return cirs
+        If Not qh.Solve(Polys.Core.GeometrySettings.Tolerance) Then Return cirs
         Dim conn() As List(Of Integer) = qh.Hull.Vertices.GetAdjacencyMatrix
 
         Dim ints As New List(Of Integer)
@@ -69,7 +70,7 @@ Public Module BraidUtils
                 almostthere.Add(thisline.PointAt(param))
             Next
 
-            Dim ch2 As New QuickHull2d(almostthere, fplane) : ch2.Solve(PolyMeshLib.Core.GeometrySettings.Tolerance)
+            Dim ch2 As New QuickHull2d(almostthere, fplane) : ch2.Solve(Polys.Core.GeometrySettings.Tolerance)
             Dim hull As Polyline = ch2.HullPolyline
 
             Dim aver As Point3d = AveragePoints(almostthere)

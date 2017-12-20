@@ -1,5 +1,5 @@
-﻿Imports PolyMeshLib.Braid.Types
-Imports PolyMeshLib.Braid.Types.GridPoint
+﻿Imports Polys.Braid.Types
+Imports Polys.Braid.Types.GridPoint
 
 Namespace Weaving
 

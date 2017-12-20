@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{81E10846-44C6-4A3C-BA8E-3F5A038EB032}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>PolyMeshLib.Braid</RootNamespace>
-    <AssemblyName>PolyMeshLib.Braid</AssemblyName>
+    <RootNamespace>Polys.Braid</RootNamespace>
+    <AssemblyName>Polys.Braid</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Windows</MyType>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
@@ -19,7 +19,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>D:\OneDrive\SharedBuilds\PolyMesh\</OutputPath>
-    <DocumentationFile>PolyMeshLib.Braid.xml</DocumentationFile>
+    <DocumentationFile>Polys.Braid.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -28,7 +28,7 @@
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
     <OutputPath>D:\OneDrive\SharedBuilds\PolyMesh\</OutputPath>
-    <DocumentationFile>PolyMeshLib.Braid.xml</DocumentationFile>
+    <DocumentationFile>Polys.Braid.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
@@ -44,8 +44,9 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PolyMeshLib.Core">
-      <HintPath>D:\OneDrive\SharedBuilds\PolyMesh\PolyMeshLib.Core.dll</HintPath>
+    <Reference Include="Polys.Core, Version=1.0.6563.32814, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\OneDrive\SharedBuilds\PolyMesh\Polys.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Related.Core, Version=1.0.6340.1831, Culture=neutral, processorArchitecture=MSIL">
@@ -63,7 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Import Include="Microsoft.VisualBasic" />
-    <Import Include="PolyMeshLib.Core.Types" />
+    <Import Include="Polys.Core.Types" />
     <Import Include="Related.Edges" />
     <Import Include="Related.Graphs" />
     <Import Include="Related.Sets" />

@@ -1,6 +1,4 @@
-﻿Imports PolyMeshLib.Core.Types
-Imports PolyMeshLib.Core.CommonTools
-Imports PolyMeshLib.Core.Graphs
+﻿Imports Polys.Core.CommonTools
 
 Namespace Graphs
 
@@ -10,9 +8,9 @@ Namespace Graphs
         Private _polylines As New List(Of Polyline)
         Private _thickness As New List(Of Integer)
         Private _facesCounts As New List(Of Integer)
-        Private _sortThick As New SortedList(Of UndirectedEdge, Integer)
-        Private _sortFaces As New SortedList(Of UndirectedEdge, Integer)
-        Private _sortCircles As New SortedList(Of UndirectedEdge, Circle())
+        Private _sortThick As New SortedList(Of UEdge, Integer)
+        Private _sortFaces As New SortedList(Of UEdge, Integer)
+        Private _sortCircles As New SortedList(Of UEdge, Circle())
         Private _sortedPoints As New SortedList(Of Tuple(Of Integer, Integer, Integer), Point3d())
 
         Private _wrongVertex() As Boolean
@@ -47,7 +45,7 @@ Namespace Graphs
                 Me._facesCounts(i) -= 6
             Next
 
-            Dim Graph As UndirectedGraph(Of Point3d) = BuildGraph(Polylines)
+            Dim Graph As UGraph(Of Point3d) = BuildGraph(Polylines)
 
             Dim Conn() As List(Of Integer) = Graph.GetAdjacencyMatrix
 
@@ -80,7 +78,7 @@ Namespace Graphs
                         TriVec.Add(ThisVec)
                         Triangle.Add(ThisCorn)
 
-                        Dim thisedge As New UndirectedEdge(Index, i)
+                        Dim thisedge As New UEdge(Index, i)
                         thisedge.Orient()
 
                         trithick.Add(_sortThick(thisedge))
@@ -95,7 +93,7 @@ Namespace Graphs
                     Dim triCir As List(Of Circle) = TertiaryCircles(Triangle, Graph.Vertices(i), primCir)
 
                     For j As Integer = 0 To primCir.Count - 1 Step 1
-                        Dim ThisEdge As New UndirectedEdge(i, ThisConn(j))
+                        Dim ThisEdge As New UEdge(i, ThisConn(j))
                         ThisEdge.Orient()
 
                         If i = ThisEdge.PointA Then
@@ -123,7 +121,7 @@ Namespace Graphs
                         orientedthickness.Add(trithick(nwo(j)))
 
                         Dim Index As Integer = ThisConn(nwo(j))
-                        Dim thisedge As New UndirectedEdge(Index, i)
+                        Dim thisedge As New UEdge(Index, i)
 
                         thisedge.Orient()
 
@@ -142,7 +140,7 @@ Namespace Graphs
 
                     For j As Integer = 0 To nwo.Length - 1 Step 1
                         Dim Index As Integer = ThisConn(nwo(j))
-                        Dim thisedge As New UndirectedEdge(Index, i)
+                        Dim thisedge As New UEdge(Index, i)
 
                         thisedge.Orient()
 
@@ -174,7 +172,7 @@ Namespace Graphs
             Next
 
             'construct struts 
-            For Each ed As UndirectedEdge In Graph.Edges
+            For Each ed As UEdge In Graph.Edges
                 If _wrongVertex(ed.PointA) Or _wrongVertex(ed.PointB) Then Continue For
                 If Conn(ed.PointA).Count = 3 And Conn(ed.PointB).Count = 3 Then
                     pm.Append(BuildStrut(ed))
@@ -183,13 +181,13 @@ Namespace Graphs
                 End If
             Next
 
-            pm.Weld(PolyMeshLib.Core.GeometrySettings.Tolerance)
+            pm.Weld(Polys.Core.GeometrySettings.Tolerance)
             pm.UnifyFaceNormals()
 
             Return pm
         End Function
 
-        Private Function BuildEndStrut(Edge As UndirectedEdge) As PolyMesh
+        Private Function BuildEndStrut(Edge As UEdge) As PolyMesh
             Dim pm As New PolyMesh
 
             Dim circles() As Circle = _sortCircles(Edge)
@@ -244,7 +242,7 @@ Namespace Graphs
             Return pm
         End Function
 
-        Private Function BuildStrut(Edge As UndirectedEdge) As PolyMesh
+        Private Function BuildStrut(Edge As UEdge) As PolyMesh
             Dim circles() As Circle = _sortCircles(Edge)
             Dim strings As Integer = _sortThick(Edge)
 
@@ -398,21 +396,21 @@ Namespace Graphs
             Return ppc
         End Function
 
-        Private Function BuildGraph(Polylines As List(Of Polyline)) As UndirectedGraph(Of Point3d)
-            Dim Graph As UndirectedGraph(Of Point3d) = Nothing
+        Private Function BuildGraph(Polylines As List(Of Polyline)) As UGraph(Of Point3d)
+            Dim Graph As UGraph(Of Point3d) = Nothing
             Dim l As New List(Of Line)
 
             For Each pl As Polyline In Polylines
                 l.Add(New Line(pl(0), pl(pl.Count - 1)))
             Next
 
-            Dim nind As New SortedList(Of UndirectedEdge, Integer)
-            Graph = GraphFactory.LinesToUGraph(l, PolyMeshLib.Core.GeometrySettings.Tolerance * 2, nind)
+            Dim nind As New SortedList(Of UEdge, Integer)
+            Graph = Polys.Core.Graphs.GraphFactory.LinesToUGraph(l, Polys.Core.GeometrySettings.Tolerance * 2, nind)
 
-            Dim grc As New UndirectedGraph(Of Point3d)(Graph.Vertices)
+            Dim grc As New UGraph(Of Point3d)(Graph.Vertices)
 
-            For Each ed As UndirectedEdge In Graph.Edges
-                Dim thised As UndirectedEdge = ed.Duplicate
+            For Each ed As UEdge In Graph.Edges
+                Dim thised As UEdge = ed.Duplicate
                 thised.Orient()
                 grc.Edges.Add(thised)
 
